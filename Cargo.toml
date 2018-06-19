@@ -1,12 +1,7 @@
 [package]
-name = "holochain_cmd"
+name = "hcdev-rust"
 version = "0.1.0"
 authors = ["philipbeadle <philip.beadle@live.com.au>"]
-
-[lib]
-name = "holochain_cmd"
-path = "src/cmd.rs"
-crate-type = ["dylib"]
 
 [dependencies]
 hc_core = { git = "https://github.com/holochain/holochain-rust", branch = "develop" }

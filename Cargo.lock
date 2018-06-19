@@ -41,7 +41,7 @@ version = "0.1.0"
 source = "git+https://github.com/holochain/holochain-rust?branch=develop#c780592eafa0f7bded718818458d4bd7bcd77685"
 
 [[package]]
-name = "holochain_cmd"
+name = "hcdev-rust"
 version = "0.1.0"
 dependencies = [
  "clap 2.31.2 (registry+https://github.com/rust-lang/crates.io-index)",
