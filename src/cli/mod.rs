@@ -1,5 +1,7 @@
 use std::{fs::OpenOptions, io::Write, path::PathBuf, process::Command, str::FromStr};
 
+const SDK_VERSION: &str = "0.1.0";
+
 pub enum Language {
     Rust,
     TypeScript,
@@ -49,7 +51,9 @@ pub fn new(path: PathBuf, language: Language) {
 
             let mut file = OpenOptions::new().append(true).open(cargo_file).unwrap();
 
-            let input_line: Vec<_> = String::from("holochain_sdk = \"1.0\"\n").bytes().collect();
+            let input_line: Vec<_> = format!("holochain_sdk = \"{}\"\n", SDK_VERSION)
+                .as_bytes()
+                .to_vec();
 
             file.write_all(&input_line).unwrap();
 
