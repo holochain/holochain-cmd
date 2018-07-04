@@ -14,7 +14,7 @@ use structopt::StructOpt;
 #[structopt(about = "A command line for Holochain")]
 enum Cli {
     #[structopt(
-        name = "web", alias = "w", about = "Starts a web frontend for the current Holochain app"
+        name = "web", alias = "w", about = "Starts a web server for the current Holochain app"
     )]
     Web {
         #[structopt(long = "port", short = "p", default_value = "3000")]
