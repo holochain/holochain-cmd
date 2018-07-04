@@ -1,8 +1,9 @@
 [package]
-name = "hcdev-rust"
+name = "hcdev"
 version = "0.1.0"
-authors = ["philipbeadle <philip.beadle@live.com.au>"]
+authors = [ "philipbeadle <philip.beadle@live.com.au>" ]
 
 [dependencies]
-hc_core = { git = "https://github.com/holochain/holochain-rust", branch = "develop" }
-clap = "2.31.2"
+holochain_core = { git = "https://github.com/holochain/holochain-rust", branch = "develop" }
+holochain_dna = { git = "https://github.com/holochain/holochain-rust", branch = "develop" }
+structopt = "0.2"
