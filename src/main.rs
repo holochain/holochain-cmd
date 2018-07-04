@@ -23,9 +23,9 @@ enum Cli {
     #[structopt(name = "agent", alias = "a", about = "Starts a Holochain node as an agent")]
     Agent,
     #[structopt(
-        name = "build", alias = "b", about = "Builds the current Holochain app into a DNA file"
+        name = "package", alias = "b", about = "Builds the current Holochain app into a DNA file"
     )]
-    Build,
+    Package,
     #[structopt(
         name = "new", alias = "n", about = "Initializes a new Holochain app at the given directory"
     )]
@@ -48,7 +48,7 @@ fn main() {
     match args {
         Cli::Web { port } => cli::web(port),
         Cli::Agent => cli::agent(),
-        Cli::Build => cli::build(),
+        Cli::Package => cli::package(),
         Cli::New { path, language } => cli::new(path, language),
     }
 }

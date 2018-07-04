@@ -27,7 +27,7 @@ pub fn agent() {
     unimplemented!()
 }
 
-pub fn build() {
+pub fn package() {
     unimplemented!()
 }
 
