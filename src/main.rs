@@ -2,13 +2,19 @@ extern crate holochain_core;
 extern crate holochain_dna;
 #[macro_use]
 extern crate structopt;
+#[macro_use]
+extern crate failure;
 
 mod cli;
+mod error;
 mod project;
 
 use cli::Language;
+use error::{DefaultResult, HolochainError};
 use std::path::PathBuf;
 use structopt::StructOpt;
+
+pub type HolochainResult<T> = Result<T, HolochainError>;
 
 #[derive(StructOpt)]
 #[structopt(about = "A command line for Holochain")]
@@ -42,13 +48,15 @@ enum Cli {
     },
 }
 
-fn main() {
+fn main() -> DefaultResult<()> {
     let args = Cli::from_args();
 
     match args {
-        Cli::Web { port } => cli::web(port),
-        Cli::Agent => cli::agent(),
-        Cli::Package => cli::package(),
-        Cli::New { path, language } => cli::new(path, language),
+        Cli::Web { port } => cli::web(port)?,
+        Cli::Agent => cli::agent()?,
+        Cli::Package => cli::package()?,
+        Cli::New { path, language } => cli::new(path, language)?,
     }
+
+    Ok(())
 }
