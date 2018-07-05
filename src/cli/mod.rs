@@ -1,9 +1,7 @@
-use error::{CliError, DefaultResult};
+use error::{CliError, CliResult, DefaultResult};
 use std::{fs::OpenOptions, io::Write, path::PathBuf, process::Command, str::FromStr};
 
 const SDK_VERSION: &str = "0.1.0";
-
-pub type CliResult<T> = Result<T, CliError>;
 
 pub enum Language {
     Rust,
@@ -23,7 +21,7 @@ impl FromStr for Language {
 }
 
 pub fn web(port: u16) -> CliResult<()> {
-    unimplemented!()
+    Err(CliError::UnknownLanguage)
 }
 
 pub fn agent() -> CliResult<()> {

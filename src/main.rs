@@ -10,11 +10,9 @@ mod error;
 mod project;
 
 use cli::Language;
-use error::{DefaultResult, HolochainError};
+use error::{HolochainError, HolochainResult};
 use std::path::PathBuf;
 use structopt::StructOpt;
-
-pub type HolochainResult<T> = Result<T, HolochainError>;
 
 #[derive(StructOpt)]
 #[structopt(about = "A command line for Holochain")]
@@ -48,14 +46,24 @@ enum Cli {
     },
 }
 
-fn main() -> DefaultResult<()> {
+fn main() {
+    if let Err(err) = run() {
+        eprintln!("{}", err);
+
+        ::std::process::exit(1);
+    }
+}
+
+fn run() -> HolochainResult<()> {
     let args = Cli::from_args();
 
     match args {
-        Cli::Web { port } => cli::web(port)?,
-        Cli::Agent => cli::agent()?,
-        Cli::Package => cli::package()?,
-        Cli::New { path, language } => cli::new(path, language)?,
+        Cli::Web { port } => cli::web(port).or_else(|err| Err(HolochainError::Cli(err)))?,
+        Cli::Agent => cli::agent().or_else(|err| Err(HolochainError::Cli(err)))?,
+        Cli::Package => cli::package().or_else(|err| Err(HolochainError::Cli(err)))?,
+        Cli::New { path, language } => {
+            cli::new(path, language).or_else(|err| Err(HolochainError::Default(err)))?
+        }
     }
 
     Ok(())

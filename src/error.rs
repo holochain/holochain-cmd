@@ -15,3 +15,5 @@ pub enum CliError {
 }
 
 pub type DefaultResult<T> = Result<T, Error>;
+pub type HolochainResult<T> = Result<T, HolochainError>;
+pub type CliResult<T> = Result<T, CliError>;
