@@ -1,4 +1,7 @@
+use error::{CliError, CliResult, DefaultResult};
 use std::{fs::OpenOptions, io::Write, path::PathBuf, process::Command, str::FromStr};
+
+const SDK_VERSION: &str = "0.1.0";
 
 pub enum Language {
     Rust,
@@ -6,35 +9,37 @@ pub enum Language {
 }
 
 impl FromStr for Language {
-    type Err = &'static str;
+    type Err = CliError;
 
     fn from_str(input: &str) -> Result<Self, Self::Err> {
         match input {
             "rust" => Ok(Language::Rust),
             "typescript" => Ok(Language::TypeScript),
-            _ => Err("unrecognized language"),
+            _ => Err(CliError::UnknownLanguage),
         }
     }
 }
 
-pub fn web(port: u16) {
+pub fn web(port: u16) -> CliResult<()> {
+    Err(CliError::UnknownLanguage)
+}
+
+pub fn agent() -> CliResult<()> {
     unimplemented!()
 }
 
-pub fn agent() {
+pub fn package() -> CliResult<()> {
     unimplemented!()
 }
 
-pub fn build() {
-    unimplemented!()
-}
-
-pub fn new(path: PathBuf, language: Language) {
+pub fn new(path: PathBuf, language: Language) -> DefaultResult<()> {
     if path.exists() {
-        panic!("project already exists");
+        bail!("project already exists");
     }
 
-    let project_name = path.file_name().unwrap();
+    let project_name = path
+        .file_name()
+        .ok_or_else(|| format_err!("unable to get file name"))?;
 
     match language {
         Language::Rust => {
@@ -45,16 +50,20 @@ pub fn new(path: PathBuf, language: Language) {
                 .output()
                 .unwrap();
 
-            let cargo_file = path.join("Cargo.toml").canonicalize().unwrap();
+            let cargo_file = path.join("Cargo.toml").canonicalize()?;
 
-            let mut file = OpenOptions::new().append(true).open(cargo_file).unwrap();
+            let mut file = OpenOptions::new().append(true).open(cargo_file)?;
 
-            let input_line: Vec<_> = String::from("holochain_sdk = \"1.0\"\n").bytes().collect();
+            let input_line: Vec<_> = format!("holochain_sdk = \"{}\"\n", SDK_VERSION)
+                .as_bytes()
+                .to_vec();
 
-            file.write_all(&input_line).unwrap();
+            file.write_all(&input_line)?;
 
             println!("Holochain project successfully created");
         }
-        _ => unreachable!(),
+        Language::TypeScript => unimplemented!(),
     }
+
+    Ok(())
 }

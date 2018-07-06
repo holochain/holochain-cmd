@@ -2,11 +2,19 @@ extern crate holochain_core;
 extern crate holochain_dna;
 #[macro_use]
 extern crate structopt;
+#[macro_use]
+extern crate failure;
+extern crate serde;
+#[macro_use]
+extern crate serde_derive;
+extern crate serde_json;
 
 mod cli;
+mod error;
 mod project;
 
 use cli::Language;
+use error::{HolochainError, HolochainResult};
 use std::path::PathBuf;
 use structopt::StructOpt;
 
@@ -23,9 +31,9 @@ enum Cli {
     #[structopt(name = "agent", alias = "a", about = "Starts a Holochain node as an agent")]
     Agent,
     #[structopt(
-        name = "build", alias = "b", about = "Builds the current Holochain app into a DNA file"
+        name = "package", alias = "b", about = "Builds the current Holochain app into a DNA file"
     )]
-    Build,
+    Package,
     #[structopt(
         name = "new", alias = "n", about = "Initializes a new Holochain app at the given directory"
     )]
@@ -43,12 +51,24 @@ enum Cli {
 }
 
 fn main() {
+    if let Err(err) = run() {
+        eprintln!("{}", err);
+
+        ::std::process::exit(1);
+    }
+}
+
+fn run() -> HolochainResult<()> {
     let args = Cli::from_args();
 
     match args {
-        Cli::Web { port } => cli::web(port),
-        Cli::Agent => cli::agent(),
-        Cli::Build => cli::build(),
-        Cli::New { path, language } => cli::new(path, language),
+        Cli::Web { port } => cli::web(port).or_else(|err| Err(HolochainError::Cli(err)))?,
+        Cli::Agent => cli::agent().or_else(|err| Err(HolochainError::Cli(err)))?,
+        Cli::Package => cli::package().or_else(|err| Err(HolochainError::Cli(err)))?,
+        Cli::New { path, language } => {
+            cli::new(path, language).or_else(|err| Err(HolochainError::Default(err)))?
+        }
     }
+
+    Ok(())
 }
