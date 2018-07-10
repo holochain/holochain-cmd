@@ -7,9 +7,11 @@ extern crate failure;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
+extern crate semver;
 extern crate serde_json;
 
 mod cli;
+mod config;
 mod error;
 mod project;
 
@@ -22,20 +24,30 @@ use structopt::StructOpt;
 #[structopt(about = "A command line for Holochain")]
 enum Cli {
     #[structopt(
-        name = "web", alias = "w", about = "Starts a web server for the current Holochain app"
+        name = "web",
+        alias = "w",
+        about = "Starts a web server for the current Holochain app"
     )]
     Web {
         #[structopt(long = "port", short = "p", default_value = "3000")]
         port: u16,
     },
-    #[structopt(name = "agent", alias = "a", about = "Starts a Holochain node as an agent")]
+    #[structopt(
+        name = "agent",
+        alias = "a",
+        about = "Starts a Holochain node as an agent"
+    )]
     Agent,
     #[structopt(
-        name = "package", alias = "b", about = "Builds the current Holochain app into a DNA file"
+        name = "package",
+        alias = "p",
+        about = "Builds the current Holochain app into a .hcpkg file"
     )]
     Package,
     #[structopt(
-        name = "new", alias = "n", about = "Initializes a new Holochain app at the given directory"
+        name = "new",
+        alias = "n",
+        about = "Initializes a new Holochain app at the given directory"
     )]
     New {
         #[structopt(parse(from_os_str))]

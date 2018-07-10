@@ -1,17 +1,13 @@
+use holochain_dna::zome::ErrorHandling;
+
 #[derive(Serialize, Deserialize)]
 pub struct Zome {
     name: String,
     description: String,
-    config: SubConfig,
+    config: ZomeConfig,
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct SubConfig {
+pub struct ZomeConfig {
     error_handling: ErrorHandling,
-}
-
-#[derive(Serialize, Deserialize)]
-pub enum ErrorHandling {
-    #[serde(rename = "throw-errors")]
-    ThrowErrors,
 }
