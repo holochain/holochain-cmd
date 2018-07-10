@@ -11,3 +11,15 @@ pub struct Zome {
 pub struct ZomeConfig {
     error_handling: ErrorHandling,
 }
+
+impl Default for Zome {
+    fn default() -> Self {
+        Zome {
+            name: "zome_name".into(),
+            description: "Desciption of zome".into(),
+            config: ZomeConfig {
+                error_handling: ErrorHandling::ThrowErrors,
+            },
+        }
+    }
+}

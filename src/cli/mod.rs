@@ -1,24 +1,9 @@
+use config::{App, Zome};
 use error::{CliError, CliResult, DefaultResult};
-use std::{fs::OpenOptions, io::Write, path::PathBuf, process::Command, str::FromStr};
-
-const SDK_VERSION: &str = "0.1.0";
-
-pub enum Language {
-    Rust,
-    TypeScript,
-}
-
-impl FromStr for Language {
-    type Err = CliError;
-
-    fn from_str(input: &str) -> Result<Self, Self::Err> {
-        match input {
-            "rust" => Ok(Language::Rust),
-            "typescript" => Ok(Language::TypeScript),
-            _ => Err(CliError::UnknownLanguage),
-        }
-    }
-}
+use serde_json;
+use std::{
+    fs::{self, File}, path::PathBuf,
+};
 
 pub fn web(port: u16) -> CliResult<()> {
     Err(CliError::UnknownLanguage)
@@ -32,38 +17,29 @@ pub fn package() -> CliResult<()> {
     unimplemented!()
 }
 
-pub fn new(path: PathBuf, language: Language) -> DefaultResult<()> {
+const APP_CONFIG_FILE: &'static str = "app.json";
+const ZOMES_DIR: &'static str = "zomes";
+const ZOME_CONFIG_FILE: &'static str = "zome.json";
+
+const TESTS_DIR: &'static str = "tests";
+const SCENARIOS_DIR: &'static str = "scenarios";
+const UI_DIR: &'static str = "ui";
+
+pub fn new(path: PathBuf) -> DefaultResult<()> {
     if path.exists() {
         bail!("project already exists");
     }
 
-    let project_name = path
-        .file_name()
-        .ok_or_else(|| format_err!("unable to get file name"))?;
+    fs::create_dir_all(path.join(ZOMES_DIR))?;
+    fs::create_dir_all(path.join(TESTS_DIR))?;
+    fs::create_dir_all(path.join(SCENARIOS_DIR))?;
+    fs::create_dir_all(path.join(UI_DIR))?;
 
-    match language {
-        Language::Rust => {
-            Command::new("cargo")
-                .arg("new")
-                .arg(project_name)
-                .arg("--lib")
-                .output()
-                .unwrap();
+    let app_config_file = File::create(path.join(APP_CONFIG_FILE))?;
+    serde_json::to_writer_pretty(app_config_file, &App::default())?;
 
-            let cargo_file = path.join("Cargo.toml").canonicalize()?;
-
-            let mut file = OpenOptions::new().append(true).open(cargo_file)?;
-
-            let input_line: Vec<_> = format!("holochain_sdk = \"{}\"\n", SDK_VERSION)
-                .as_bytes()
-                .to_vec();
-
-            file.write_all(&input_line)?;
-
-            println!("Holochain project successfully created");
-        }
-        Language::TypeScript => unimplemented!(),
-    }
+    let zome_config_file = File::create(path.join(ZOMES_DIR).join(ZOME_CONFIG_FILE))?;
+    serde_json::to_writer_pretty(zome_config_file, &Zome::default())?;
 
     Ok(())
 }
