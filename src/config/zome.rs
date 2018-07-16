@@ -1,10 +1,23 @@
+use error::DefaultResult;
 use holochain_dna::zome::ErrorHandling;
+use serde_json;
+use std::{fs::File, path::Path};
 
 #[derive(Serialize, Deserialize)]
 pub struct Zome {
     name: String,
-    description: String,
+    description: Option<String>,
     config: ZomeConfig,
+}
+
+impl Zome {
+    pub fn from_file<T: AsRef<Path>>(path: T) -> DefaultResult<Zome> {
+        let file = File::open(&path)?;
+
+        let zome = serde_json::from_reader(file)?;
+
+        Ok(zome)
+    }
 }
 
 #[derive(Serialize, Deserialize)]
@@ -16,7 +29,7 @@ impl Default for Zome {
     fn default() -> Self {
         Zome {
             name: "zome_name".into(),
-            description: "Desciption of zome".into(),
+            description: "Desciption of zome".to_string().into(),
             config: ZomeConfig {
                 error_handling: ErrorHandling::ThrowErrors,
             },

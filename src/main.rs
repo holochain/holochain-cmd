@@ -37,11 +37,16 @@ enum Cli {
     )]
     Package,
     #[structopt(
-        name = "new", alias = "n", about = "Initializes a new Holochain app at the given directory"
+        name = "init", alias = "i", about = "Initializes a new Holochain app at the given directory"
     )]
-    New {
+    Init {
         #[structopt(parse(from_os_str))]
         path: PathBuf,
+        #[structopt(
+            long = "from",
+            help = "Specifies the hash of the DNA the new app should be scaffolded from"
+        )]
+        from: Option<String>,
     },
 }
 
@@ -59,8 +64,10 @@ fn run() -> HolochainResult<()> {
     match args {
         Cli::Web { port } => cli::web(port).or_else(|err| Err(HolochainError::Cli(err)))?,
         Cli::Agent => cli::agent().or_else(|err| Err(HolochainError::Cli(err)))?,
-        Cli::Package => cli::package().or_else(|err| Err(HolochainError::Cli(err)))?,
-        Cli::New { path } => cli::new(path).or_else(|err| Err(HolochainError::Default(err)))?,
+        Cli::Package => cli::package().or_else(|err| Err(HolochainError::Default(err)))?,
+        Cli::Init { path, from } => {
+            cli::new(path, from).or_else(|err| Err(HolochainError::Default(err)))?
+        }
     }
 
     Ok(())
