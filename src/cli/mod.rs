@@ -2,14 +2,13 @@ use config::{App, Zome};
 use error::{CliError, CliResult, DefaultResult};
 use serde_json;
 use std::{
-    collections::HashMap, fs::{self, File}, io::Read, path::{Path, PathBuf},
+    fs::{self, File}, io::Read, path::{Path, PathBuf},
 };
 
 const APP_CONFIG_FILE: &str = "app.json";
 const ZOMES_DIR: &str = "zomes";
 const ZOME_CONFIG_FILE: &str = "zome.json";
 
-const CAPS_DIR: &str = "caps";
 const CAP_CONFIG_FILE: &str = "cap.json";
 
 const TESTS_DIR: &str = "tests";
