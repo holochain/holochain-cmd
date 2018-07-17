@@ -39,13 +39,13 @@ pub fn package() -> DefaultResult<()> {
 
     for zome in zomes_dir {
         if !zome.is_dir() {
-            bail!("{:?} is not a directory", zome);
+            bail!("the path {:?} is not a directory", zome);
         }
 
         let config_file_path = zome.join(ZOME_CONFIG_FILE);
 
         if !config_file_path.exists() {
-            bail!("{:?} doesn't contain a zome.json file", zome);
+            bail!("the path {:?} doesn't contain a zome.json file", zome);
         }
 
         let config_file = Zome::from_file(&config_file_path)?;

@@ -48,6 +48,20 @@ enum Cli {
         )]
         from: Option<String>,
     },
+    #[structopt(
+        name = "generate",
+        alias = "g",
+        about = "Generates a new zome and scaffolds the given capabilities"
+    )]
+    Generate {
+        #[structopt(help = "The name of the zome that will be generated")]
+        zome_name: String,
+        #[structopt(
+            help = "A list of capabilities that will be scaffolded (e.g. blog:rust web_frontend:typescript)",
+            raw(required = "true")
+        )]
+        capabilities: Vec<String>,
+    },
 }
 
 fn main() {
@@ -68,6 +82,7 @@ fn run() -> HolochainResult<()> {
         Cli::Init { path, from } => {
             cli::new(path, from).or_else(|err| Err(HolochainError::Default(err)))?
         }
+        Cli::Generate { .. } => unimplemented!(),
     }
 
     Ok(())

@@ -18,6 +18,14 @@ impl Zome {
 
         Ok(zome)
     }
+
+    pub fn save_as<T: AsRef<Path>>(&self, path: T) -> DefaultResult<()> {
+        let file = File::create(&path)?;
+
+        serde_json::to_writer_pretty(file, self)?;
+
+        Ok(())
+    }
 }
 
 #[derive(Serialize, Deserialize)]
