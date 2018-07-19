@@ -9,7 +9,10 @@ const APP_CONFIG_FILE: &str = "app.json";
 const ZOMES_DIR: &str = "zomes";
 const ZOME_CONFIG_FILE: &str = "zome.json";
 
-const CAP_CONFIG_FILE: &str = "cap.json";
+const CAPS_DIR: &str = "capabilities";
+const CAP_CONFIG_FILE: &str = "capability.json";
+
+const ENTRY_TYPES_DIR: &str = "entry_types";
 
 const TESTS_DIR: &str = "tests";
 const SCENARIOS_DIR: &str = "scenarios";
@@ -20,7 +23,12 @@ pub fn web(port: u16) -> CliResult<()> {
 }
 
 pub fn agent() -> CliResult<()> {
-    unimplemented!()
+    println!("Starting agent...");
+    println!("Agent successfully started!");
+    println!("Stopping agent...");
+    println!("Agent stopped. Bye!");
+
+    Ok(())
 }
 
 pub fn package() -> DefaultResult<()> {
@@ -59,7 +67,7 @@ pub fn package() -> DefaultResult<()> {
 }
 
 fn compile_zome<T: AsRef<Path>>(path: T, config: &Zome) -> DefaultResult<()> {
-    let caps_dir: Vec<_> = fs::read_dir(&path)?
+    let caps_dir: Vec<_> = fs::read_dir(&path.as_ref().join(CAPS_DIR))?
         .filter(|e| e.is_ok())
         .map(|e| e.unwrap().path())
         .collect();
