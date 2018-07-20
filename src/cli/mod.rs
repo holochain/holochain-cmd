@@ -2,7 +2,9 @@ use config::{App, Zome};
 use error::{CliError, CliResult, DefaultResult};
 use serde_json;
 use std::{
-    fs::{self, File}, io::Read, path::{Path, PathBuf},
+    fs::{self, File},
+    io::Read,
+    path::{Path, PathBuf},
 };
 
 const APP_CONFIG_FILE: &str = "app.json";
@@ -67,7 +69,9 @@ pub fn package() -> DefaultResult<()> {
 }
 
 fn compile_zome<T: AsRef<Path>>(path: T, config: &Zome) -> DefaultResult<()> {
-    let caps_dir: Vec<_> = fs::read_dir(&path.as_ref().join(CAPS_DIR))?
+    let caps_dir_path = path.as_ref().join(CAPS_DIR);
+
+    let caps_dir: Vec<_> = fs::read_dir(&caps_dir_path)?
         .filter(|e| e.is_ok())
         .map(|e| e.unwrap().path())
         .collect();
@@ -89,6 +93,13 @@ fn compile_zome<T: AsRef<Path>>(path: T, config: &Zome) -> DefaultResult<()> {
 
         let compiled_wasm = compile_capabiliy(cap_path)?;
     }
+
+    let entry_types_dir_path = path.as_ref().join(ENTRY_TYPES_DIR);
+
+    let entry_types_dir: Vec<_> = fs::read_dir(&entry_types_dir_path)?
+        .filter(|e| e.is_ok())
+        .map(|e| e.unwrap().path())
+        .collect();
 
     Ok(())
 }
