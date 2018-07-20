@@ -7,8 +7,10 @@ extern crate failure;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
+extern crate assert_cli;
 extern crate semver;
 extern crate serde_json;
+extern crate tempdir;
 extern crate uuid;
 
 mod cli;
@@ -96,4 +98,61 @@ fn run() -> HolochainResult<()> {
     }
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use assert_cli::Assert;
+    use tempdir::TempDir;
+
+    const HOLOCHAIN_TEST_DIR: &str = "holochain_test";
+
+    fn gen_dir() -> TempDir {
+        TempDir::new(HOLOCHAIN_TEST_DIR).unwrap()
+    }
+
+    #[test]
+    fn generate_without_args() {
+        Assert::main_binary()
+            .with_args(&["generate"])
+            .fails()
+            .unwrap();
+
+        Assert::main_binary().with_args(&["g"]).fails().unwrap();
+    }
+
+    #[test]
+    fn init_base_test() {
+        const TEST_DIR: &str = "___init_base_test";
+
+        let tmp_dir = gen_dir();
+        let file_path = tmp_dir.path().join(TEST_DIR);
+
+        Assert::main_binary()
+            .with_args(&["init", file_path.to_str().unwrap()])
+            .succeeds()
+            .unwrap();
+    }
+
+    #[test]
+    fn double_init_test() {
+        const TEST_DIR: &str = "___double_init_test";
+
+        let tmp_dir = gen_dir();
+        let file_path = tmp_dir.path().join(TEST_DIR);
+
+        Assert::main_binary()
+            .with_args(&["init", file_path.to_str().unwrap()])
+            .succeeds()
+            .unwrap();
+
+        Assert::main_binary()
+            .with_args(&["init", file_path.to_str().unwrap()])
+            .fails()
+            .and()
+            .stderr()
+            .contains("directory is not empty")
+            .unwrap();
+    }
 }
