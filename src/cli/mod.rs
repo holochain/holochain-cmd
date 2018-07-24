@@ -1,69 +1,161 @@
+use config::{App, EntryType, Zome};
 use error::{CliError, CliResult, DefaultResult};
-use std::{fs::OpenOptions, io::Write, path::PathBuf, process::Command, str::FromStr};
+use serde_json;
+use std::{
+    fs::{self, File}, io::Read, path::{Path, PathBuf},
+};
 
-const SDK_VERSION: &str = "0.1.0";
+const APP_CONFIG_FILE: &str = "app.json";
+const ZOMES_DIR: &str = "zomes";
+const ZOME_CONFIG_FILE: &str = "zome.json";
 
-pub enum Language {
-    Rust,
-    TypeScript,
-}
+const CAPS_DIR: &str = "capabilities";
+const CAP_CONFIG_FILE: &str = "capability.json";
 
-impl FromStr for Language {
-    type Err = CliError;
+const ENTRY_TYPES_DIR: &str = "entry_types";
+const ENTRY_TYPE_VALIDATION_FILE: &str = "validation.wasm";
+const ENTRY_TYPE_CONFIG_FILE: &str = "type.json";
 
-    fn from_str(input: &str) -> Result<Self, Self::Err> {
-        match input {
-            "rust" => Ok(Language::Rust),
-            "typescript" => Ok(Language::TypeScript),
-            _ => Err(CliError::UnknownLanguage),
-        }
-    }
-}
+const TESTS_DIR: &str = "tests";
+const SCENARIOS_DIR: &str = "scenarios";
+const UI_DIR: &str = "ui";
+
+const ZOME_WASM_BIN_NAME: &str = "main.wasm";
 
 pub fn web(port: u16) -> CliResult<()> {
     Err(CliError::UnknownLanguage)
 }
 
 pub fn agent() -> CliResult<()> {
-    unimplemented!()
+    println!("Starting agent...");
+    println!("Agent successfully started!");
+    println!("Stopping agent...");
+    println!("Agent stopped. Bye!");
+
+    Ok(())
 }
 
-pub fn package() -> CliResult<()> {
-    unimplemented!()
-}
+pub fn package() -> DefaultResult<()> {
+    let zomes_dir_path = PathBuf::from(ZOMES_DIR);
 
-pub fn new(path: PathBuf, language: Language) -> DefaultResult<()> {
-    if path.exists() {
-        bail!("project already exists");
+    let zomes_dir: Vec<_> = fs::read_dir(&zomes_dir_path)?
+        .filter(|e| e.is_ok())
+        .map(|e| e.unwrap().path())
+        .collect();
+
+    if zomes_dir.is_empty() {
+        bail!("no zomes found");
     }
 
-    let project_name = path
-        .file_name()
-        .ok_or_else(|| format_err!("unable to get file name"))?;
-
-    match language {
-        Language::Rust => {
-            Command::new("cargo")
-                .arg("new")
-                .arg(project_name)
-                .arg("--lib")
-                .output()
-                .unwrap();
-
-            let cargo_file = path.join("Cargo.toml").canonicalize()?;
-
-            let mut file = OpenOptions::new().append(true).open(cargo_file)?;
-
-            let input_line: Vec<_> = format!("holochain_sdk = \"{}\"\n", SDK_VERSION)
-                .as_bytes()
-                .to_vec();
-
-            file.write_all(&input_line)?;
-
-            println!("Holochain project successfully created");
+    for zome_path in zomes_dir {
+        if !zome_path.is_dir() {
+            bail!("the path {:?} is not a directory", zome_path);
         }
-        Language::TypeScript => unimplemented!(),
+
+        let config_file_path = zome_path.join(ZOME_CONFIG_FILE);
+
+        if !config_file_path.exists() {
+            bail!(
+                "the path {:?} doesn't contain a {} file",
+                zome_path,
+                ZOME_CONFIG_FILE
+            );
+        }
+
+        let config_file = Zome::from_file(&config_file_path)?;
+
+        compile_zome(&zome_path, &config_file)?;
     }
+
+    Ok(())
+}
+
+fn compile_zome<T: AsRef<Path>>(path: T, config: &Zome) -> DefaultResult<()> {
+    let caps_dir_path = path.as_ref().join(CAPS_DIR);
+
+    let caps_dir: Vec<_> = fs::read_dir(&caps_dir_path)?
+        .filter(|e| e.is_ok())
+        .map(|e| e.unwrap().path())
+        .collect();
+
+    for cap_path in caps_dir {
+        if !cap_path.is_dir() {
+            bail!("the path {:?} is not a directory", cap_path);
+        }
+
+        let config_file_path = cap_path.join(CAP_CONFIG_FILE);
+
+        if !config_file_path.exists() {
+            bail!(
+                "the path {:?} doesn't contain a {} file",
+                cap_path,
+                CAP_CONFIG_FILE
+            );
+        }
+
+        let compiled_wasm = compile_capabiliy(cap_path)?;
+    }
+
+    let entry_types_dir_path = path.as_ref().join(ENTRY_TYPES_DIR);
+
+    let entry_types_dir: Vec<_> = fs::read_dir(&entry_types_dir_path)?
+        .filter(|e| e.is_ok())
+        .map(|e| e.unwrap().path())
+        .collect();
+
+    for entry_path in entry_types_dir {
+        if !entry_path.is_dir() {
+            bail!("{:?} is not a directory", entry_path);
+        }
+
+        let mut config_file = EntryType::from_file(entry_path.join(ENTRY_TYPE_CONFIG_FILE))?;
+
+        let mut validation_file = File::open(entry_path.join(ENTRY_TYPE_VALIDATION_FILE))?;
+
+        let mut wasm_data = Vec::new();
+
+        validation_file.read_to_end(&mut wasm_data)?;
+
+        config_file.validation = wasm_data;
+    }
+
+    Ok(())
+}
+
+fn compile_capabiliy<T: AsRef<Path>>(path: T) -> DefaultResult<Vec<u8>> {
+    let path = PathBuf::from(path.as_ref());
+
+    let wasm_bin_path = path.join(ZOME_WASM_BIN_NAME);
+
+    let mut file = File::open(wasm_bin_path)?;
+
+    let mut wasm_data = Vec::new();
+
+    file.read_to_end(&mut wasm_data)?;
+
+    Ok(wasm_data)
+}
+
+pub fn new(path: PathBuf, from: Option<String>) -> DefaultResult<()> {
+    if !path.exists() {
+        fs::create_dir_all(&path)?;
+    }
+
+    let zomes_dir = fs::read_dir(&path)?;
+
+    if zomes_dir.count() > 0 {
+        bail!("directory is not empty");
+    }
+
+    fs::create_dir_all(path.join(ZOMES_DIR))?;
+    fs::create_dir_all(path.join(TESTS_DIR))?;
+    fs::create_dir_all(path.join(SCENARIOS_DIR))?;
+    fs::create_dir_all(path.join(UI_DIR))?;
+
+    let app_config_file = File::create(path.join(APP_CONFIG_FILE))?;
+    serde_json::to_writer_pretty(app_config_file, &App::default())?;
+
+    println!("Created new Holochain project at: {:?}", path);
 
     Ok(())
 }
