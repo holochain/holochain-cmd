@@ -1,10 +1,8 @@
-use config::{App, Zome};
+use config::{App, EntryType, Zome};
 use error::{CliError, CliResult, DefaultResult};
 use serde_json;
 use std::{
-    fs::{self, File},
-    io::Read,
-    path::{Path, PathBuf},
+    fs::{self, File}, io::Read, path::{Path, PathBuf},
 };
 
 const APP_CONFIG_FILE: &str = "app.json";
@@ -15,10 +13,14 @@ const CAPS_DIR: &str = "capabilities";
 const CAP_CONFIG_FILE: &str = "capability.json";
 
 const ENTRY_TYPES_DIR: &str = "entry_types";
+const ENTRY_TYPE_VALIDATION_FILE: &str = "validation.wasm";
+const ENTRY_TYPE_CONFIG_FILE: &str = "type.json";
 
 const TESTS_DIR: &str = "tests";
 const SCENARIOS_DIR: &str = "scenarios";
 const UI_DIR: &str = "ui";
+
+const ZOME_WASM_BIN_NAME: &str = "main.wasm";
 
 pub fn web(port: u16) -> CliResult<()> {
     Err(CliError::UnknownLanguage)
@@ -101,15 +103,29 @@ fn compile_zome<T: AsRef<Path>>(path: T, config: &Zome) -> DefaultResult<()> {
         .map(|e| e.unwrap().path())
         .collect();
 
+    for entry_path in entry_types_dir {
+        if !entry_path.is_dir() {
+            bail!("{:?} is not a directory", entry_path);
+        }
+
+        let mut config_file = EntryType::from_file(entry_path.join(ENTRY_TYPE_CONFIG_FILE))?;
+
+        let mut validation_file = File::open(entry_path.join(ENTRY_TYPE_VALIDATION_FILE))?;
+
+        let mut wasm_data = Vec::new();
+
+        validation_file.read_to_end(&mut wasm_data)?;
+
+        config_file.validation = wasm_data;
+    }
+
     Ok(())
 }
 
 fn compile_capabiliy<T: AsRef<Path>>(path: T) -> DefaultResult<Vec<u8>> {
-    const WASM_BIN_NAME: &str = "main.wasm";
-
     let path = PathBuf::from(path.as_ref());
 
-    let wasm_bin_path = path.join(WASM_BIN_NAME);
+    let wasm_bin_path = path.join(ZOME_WASM_BIN_NAME);
 
     let mut file = File::open(wasm_bin_path)?;
 
