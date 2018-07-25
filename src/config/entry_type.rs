@@ -16,8 +16,6 @@ pub enum Sharing {
 pub struct EntryType {
     pub name: String,
     pub description: String,
-    #[serde(default)]
-    pub validation: Vec<u8>,
     pub sharing: Sharing,
     pub links_to: Vec<Link>,
 }
@@ -44,6 +42,4 @@ impl EntryType {
 pub struct Link {
     target_type: String,
     tag: String,
-    #[serde(default)]
-    validation: Vec<u8>,
 }

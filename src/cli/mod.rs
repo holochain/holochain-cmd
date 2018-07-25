@@ -5,22 +5,22 @@ use std::{
     fs::{self, File}, io::Read, path::{Path, PathBuf},
 };
 
-const APP_CONFIG_FILE: &str = "app.json";
-const ZOMES_DIR: &str = "zomes";
-const ZOME_CONFIG_FILE: &str = "zome.json";
+pub const APP_CONFIG_FILE: &str = "app.json";
+pub const ZOMES_DIR: &str = "zomes";
+pub const ZOME_CONFIG_FILE: &str = "zome.json";
 
-const CAPS_DIR: &str = "capabilities";
-const CAP_CONFIG_FILE: &str = "capability.json";
+pub const CAPABILITIES_DIR: &str = "capabilities";
+pub const CAPABILITY_CONFIG_FILE: &str = "capability.json";
 
-const ENTRY_TYPES_DIR: &str = "entry_types";
-const ENTRY_TYPE_VALIDATION_FILE: &str = "validation.wasm";
-const ENTRY_TYPE_CONFIG_FILE: &str = "type.json";
+pub const ENTRY_TYPES_DIR: &str = "entry_types";
+pub const ENTRY_TYPE_VALIDATION_FILE: &str = "validation.wasm";
+pub const ENTRY_TYPE_CONFIG_FILE: &str = "type.json";
 
-const TESTS_DIR: &str = "tests";
-const SCENARIOS_DIR: &str = "scenarios";
-const UI_DIR: &str = "ui";
+pub const TESTS_DIR: &str = "tests";
+pub const SCENARIOS_DIR: &str = "scenarios";
+pub const UI_DIR: &str = "ui";
 
-const ZOME_WASM_BIN_NAME: &str = "main.wasm";
+pub const ZOME_WASM_BIN_NAME: &str = "main.wasm";
 
 pub fn web(port: u16) -> CliResult<()> {
     Err(CliError::UnknownLanguage)
@@ -71,7 +71,7 @@ pub fn package() -> DefaultResult<()> {
 }
 
 fn compile_zome<T: AsRef<Path>>(path: T, config: &Zome) -> DefaultResult<()> {
-    let caps_dir_path = path.as_ref().join(CAPS_DIR);
+    let caps_dir_path = path.as_ref().join(CAPABILITIES_DIR);
 
     let caps_dir: Vec<_> = fs::read_dir(&caps_dir_path)?
         .filter(|e| e.is_ok())
@@ -83,13 +83,13 @@ fn compile_zome<T: AsRef<Path>>(path: T, config: &Zome) -> DefaultResult<()> {
             bail!("the path {:?} is not a directory", cap_path);
         }
 
-        let config_file_path = cap_path.join(CAP_CONFIG_FILE);
+        let config_file_path = cap_path.join(CAPABILITY_CONFIG_FILE);
 
         if !config_file_path.exists() {
             bail!(
                 "the path {:?} doesn't contain a {} file",
                 cap_path,
-                CAP_CONFIG_FILE
+                CAPABILITY_CONFIG_FILE
             );
         }
 
@@ -115,8 +115,6 @@ fn compile_zome<T: AsRef<Path>>(path: T, config: &Zome) -> DefaultResult<()> {
         let mut wasm_data = Vec::new();
 
         validation_file.read_to_end(&mut wasm_data)?;
-
-        config_file.validation = wasm_data;
     }
 
     Ok(())
