@@ -2,7 +2,9 @@ use config::{App, Capability, EntryType, Zome};
 use error::{CliError, CliResult, DefaultResult};
 use serde_json;
 use std::{
-    fs::{self, File}, io::Read, path::{Path, PathBuf},
+    fs::{self, File},
+    io::Read,
+    path::{Path, PathBuf},
 };
 
 pub const APP_CONFIG_FILE: &str = "app.json";
@@ -95,7 +97,7 @@ fn compile_zome<T: AsRef<Path>>(path: T, config: &Zome) -> DefaultResult<()> {
 
         let cap_config_file: Capability = Capability::from_file(config_file_path)?;
 
-        let compiled_wasm = compile_capabiliy(cap_path)?;
+        let compiled_wasm = compile_capabiliy(cap_path, &cap_config_file)?;
     }
 
     let entry_types_dir_path = path.as_ref().join(ENTRY_TYPES_DIR);
@@ -122,7 +124,7 @@ fn compile_zome<T: AsRef<Path>>(path: T, config: &Zome) -> DefaultResult<()> {
     Ok(())
 }
 
-fn compile_capabiliy<T: AsRef<Path>>(path: T) -> DefaultResult<Vec<u8>> {
+fn compile_capabiliy<T: AsRef<Path>>(path: T, cap_config: &Capability) -> DefaultResult<Vec<u8>> {
     let path = PathBuf::from(path.as_ref());
 
     let wasm_bin_path = path.join(ZOME_WASM_BIN_NAME);
