@@ -1,18 +1,12 @@
 use error::DefaultResult;
-use holochain_dna::zome::entry_types::Sharing;
 use serde_json;
 use std::{fs::File, path::Path};
 
 #[derive(Serialize, Deserialize)]
-pub struct EntryType {
-    pub name: String,
-    pub description: String,
-    pub sharing: Sharing,
-    pub links_to: Vec<Link>,
-}
+pub struct Capability {}
 
-impl EntryType {
-    pub fn from_file<T: AsRef<Path>>(path: T) -> DefaultResult<EntryType> {
+impl Capability {
+    pub fn from_file<T: AsRef<Path>>(path: T) -> DefaultResult<Capability> {
         let file = File::open(&path)?;
 
         let zome = serde_json::from_reader(file)?;
@@ -27,10 +21,4 @@ impl EntryType {
 
         Ok(())
     }
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct Link {
-    target_type: String,
-    tag: String,
 }

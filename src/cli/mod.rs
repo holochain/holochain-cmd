@@ -1,4 +1,4 @@
-use config::{App, EntryType, Zome};
+use config::{App, Capability, EntryType, Zome};
 use error::{CliError, CliResult, DefaultResult};
 use serde_json;
 use std::{
@@ -92,6 +92,8 @@ fn compile_zome<T: AsRef<Path>>(path: T, config: &Zome) -> DefaultResult<()> {
                 CAPABILITY_CONFIG_FILE
             );
         }
+
+        let cap_config_file: Capability = Capability::from_file(config_file_path)?;
 
         let compiled_wasm = compile_capabiliy(cap_path)?;
     }
