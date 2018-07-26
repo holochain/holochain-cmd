@@ -11,5 +11,5 @@ In a terminal
 - change directories to this folder
 - run `cargo build`
 - run `cargo run` to see the CLI tools overview
-- run another command, such as `cargo run help`
+- run another command, such as `cargo run -- help`
 - If you wish to install it as a binary to the terminal, run `cargo install -f --path .`
