@@ -1,4 +1,7 @@
-use config::{App, Capability, EntryType, Zome};
+use config::{
+    App as AppConfig, Capability as CapabilityConfig, EntryType as EntryTypeConfig,
+    Zome as ZomeConfig,
+};
 use error::{CliError, CliResult, DefaultResult};
 use serde_json;
 use std::{
@@ -64,7 +67,7 @@ pub fn package() -> DefaultResult<()> {
             );
         }
 
-        let config_file = Zome::from_file(&config_file_path)?;
+        let config_file = ZomeConfig::from_file(&config_file_path)?;
 
         compile_zome(&zome_path, &config_file)?;
     }
@@ -72,7 +75,7 @@ pub fn package() -> DefaultResult<()> {
     Ok(())
 }
 
-fn compile_zome<T: AsRef<Path>>(path: T, config: &Zome) -> DefaultResult<()> {
+fn compile_zome<T: AsRef<Path>>(path: T, config: &ZomeConfig) -> DefaultResult<()> {
     let caps_dir_path = path.as_ref().join(CAPABILITIES_DIR);
 
     let caps_dir: Vec<_> = fs::read_dir(&caps_dir_path)?
@@ -95,7 +98,7 @@ fn compile_zome<T: AsRef<Path>>(path: T, config: &Zome) -> DefaultResult<()> {
             );
         }
 
-        let cap_config_file: Capability = Capability::from_file(config_file_path)?;
+        let cap_config_file: CapabilityConfig = CapabilityConfig::from_file(config_file_path)?;
 
         let compiled_wasm = compile_capabiliy(cap_path, &cap_config_file)?;
     }
@@ -112,7 +115,7 @@ fn compile_zome<T: AsRef<Path>>(path: T, config: &Zome) -> DefaultResult<()> {
             bail!("{:?} is not a directory", entry_path);
         }
 
-        let mut config_file = EntryType::from_file(entry_path.join(ENTRY_TYPE_CONFIG_FILE))?;
+        let mut config_file = EntryTypeConfig::from_file(entry_path.join(ENTRY_TYPE_CONFIG_FILE))?;
 
         let mut validation_file = File::open(entry_path.join(ENTRY_TYPE_VALIDATION_FILE))?;
 
@@ -124,7 +127,10 @@ fn compile_zome<T: AsRef<Path>>(path: T, config: &Zome) -> DefaultResult<()> {
     Ok(())
 }
 
-fn compile_capabiliy<T: AsRef<Path>>(path: T, cap_config: &Capability) -> DefaultResult<Vec<u8>> {
+fn compile_capabiliy<T: AsRef<Path>>(
+    path: T,
+    cap_config: &CapabilityConfig,
+) -> DefaultResult<Vec<u8>> {
     let path = PathBuf::from(path.as_ref());
 
     let wasm_bin_path = path.join(ZOME_WASM_BIN_NAME);
@@ -155,7 +161,7 @@ pub fn new(path: PathBuf, from: Option<String>) -> DefaultResult<()> {
     fs::create_dir_all(path.join(UI_DIR))?;
 
     let app_config_file = File::create(path.join(APP_CONFIG_FILE))?;
-    serde_json::to_writer_pretty(app_config_file, &App::default())?;
+    serde_json::to_writer_pretty(app_config_file, &AppConfig::default())?;
 
     println!("Created new Holochain project at: {:?}", path);
 
