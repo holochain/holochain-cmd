@@ -1,15 +1,15 @@
-use config::Dht;
+use config_files::Dht;
 use semver::Version;
 use std::collections::HashMap;
 
 #[derive(Serialize, Deserialize)]
 pub struct App {
-    name: String,
-    description: String,
-    authors: Vec<Author>,
-    version: Version,
-    dht: Dht,
-    properties: HashMap<String, String>,
+    pub name: String,
+    pub description: String,
+    pub authors: Vec<Author>,
+    pub version: Version,
+    pub dht: Dht,
+    pub properties: HashMap<String, String>,
 }
 
 #[derive(Serialize, Deserialize)]

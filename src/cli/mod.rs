@@ -1,13 +1,13 @@
-use config::{
+use config_files::{
     App as AppConfig, Capability as CapabilityConfig, EntryType as EntryTypeConfig,
     Zome as ZomeConfig,
 };
 use error::{CliError, CliResult, DefaultResult};
+use holochain_dna::{Dna, zome::Zome};
+use package::Package;
 use serde_json;
 use std::{
-    fs::{self, File},
-    io::Read,
-    path::{Path, PathBuf},
+    fs::{self, File}, io::Read, path::{Path, PathBuf},
 };
 
 pub const APP_CONFIG_FILE: &str = "app.json";
@@ -24,6 +24,8 @@ pub const ENTRY_TYPE_CONFIG_FILE: &str = "type.json";
 pub const TESTS_DIR: &str = "tests";
 pub const SCENARIOS_DIR: &str = "scenarios";
 pub const UI_DIR: &str = "ui";
+pub const TARGET_DIR: &str = "target";
+pub const PACKAGE_ARTIFACT: &str = "out.hcpkg";
 
 pub const ZOME_WASM_BIN_NAME: &str = "main.wasm";
 
@@ -52,6 +54,11 @@ pub fn package() -> DefaultResult<()> {
         bail!("no zomes found");
     }
 
+    let app_config_file = File::open(APP_CONFIG_FILE)?;
+    let app_config: AppConfig = serde_json::from_reader(app_config_file)?;
+
+    let mut compiled_zomes = Vec::new();
+
     for zome_path in zomes_dir {
         if !zome_path.is_dir() {
             bail!("the path {:?} is not a directory", zome_path);
@@ -69,13 +76,19 @@ pub fn package() -> DefaultResult<()> {
 
         let config_file = ZomeConfig::from_file(&config_file_path)?;
 
-        compile_zome(&zome_path, &config_file)?;
+        compiled_zomes.push(compile_zome(&zome_path, &config_file)?);
     }
+
+    let mut pack = Package::from_app_config(app_config);
+
+    pack.zomes = compiled_zomes;
+
+    pack.save_as(PathBuf::from(TARGET_DIR).join(PACKAGE_ARTIFACT));
 
     Ok(())
 }
 
-fn compile_zome<T: AsRef<Path>>(path: T, config: &ZomeConfig) -> DefaultResult<()> {
+fn compile_zome<T: AsRef<Path>>(path: T, zome_config: &ZomeConfig) -> DefaultResult<Zome> {
     let caps_dir_path = path.as_ref().join(CAPABILITIES_DIR);
 
     let caps_dir: Vec<_> = fs::read_dir(&caps_dir_path)?
@@ -98,7 +111,7 @@ fn compile_zome<T: AsRef<Path>>(path: T, config: &ZomeConfig) -> DefaultResult<(
             );
         }
 
-        let cap_config_file: CapabilityConfig = CapabilityConfig::from_file(config_file_path)?;
+        let cap_config_file = CapabilityConfig::from_file(config_file_path)?;
 
         let compiled_wasm = compile_capabiliy(cap_path, &cap_config_file)?;
     }
@@ -124,7 +137,7 @@ fn compile_zome<T: AsRef<Path>>(path: T, config: &ZomeConfig) -> DefaultResult<(
         validation_file.read_to_end(&mut wasm_data)?;
     }
 
-    Ok(())
+    bail!("NOPE! NO SOY BLA BLA BLA");
 }
 
 fn compile_capabiliy<T: AsRef<Path>>(
