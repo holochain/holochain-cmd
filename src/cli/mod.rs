@@ -3,11 +3,13 @@ use config_files::{
     Zome as ZomeConfig,
 };
 use error::{CliError, CliResult, DefaultResult};
-use holochain_dna::{Dna, zome::Zome};
+use holochain_dna::{zome::Zome, Dna};
 use package::Package;
 use serde_json;
 use std::{
-    fs::{self, File}, io::Read, path::{Path, PathBuf},
+    fs::{self, File},
+    io::Read,
+    path::{Path, PathBuf},
 };
 
 pub const APP_CONFIG_FILE: &str = "app.json";
