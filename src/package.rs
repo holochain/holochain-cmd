@@ -1,39 +1,33 @@
 use config_files::{App as AppConfig, Author, Dht};
-use holochain_dna::zome::Zome;
+use holochain_dna::Dna;
 use semver::Version;
-use serde_json;
-use std::{collections::HashMap, fs::File, path::Path};
+use serde_json::{self, Value};
+use std::{fs::File, path::Path};
 
 #[derive(Serialize, Deserialize)]
 pub struct Package {
-    pub name: String,
-    pub description: String,
+    pub spec_version: Version,
     pub authors: Vec<Author>,
-    pub version: Version,
+    pub dna: Dna,
+    pub properties: Value,
     pub dht: Dht,
-    pub properties: HashMap<String, String>,
-    pub zomes: Vec<Zome>,
 }
 
 impl Package {
     pub fn from_app_config(base: AppConfig) -> Package {
         let AppConfig {
-            name,
-            description,
             authors,
-            version,
             dht,
-            properties,
+            properties, // use properties in the future
+            ..
         } = base;
 
         Package {
-            name,
-            description,
             authors,
-            version,
+            spec_version: (2, 0, 0).into(),
             dht,
             properties,
-            zomes: Vec::new(),
+            dna: Default::default(),
         }
     }
 

@@ -1,13 +1,13 @@
 use error::DefaultResult;
-use holochain_dna::zome::ErrorHandling;
+use holochain_dna::zome::{Config, ErrorHandling};
 use serde_json;
 use std::{fs::File, path::Path};
 
 #[derive(Serialize, Deserialize)]
 pub struct Zome {
-    name: String,
-    description: Option<String>,
-    config: ZomeConfig,
+    pub name: String,
+    pub description: Option<String>,
+    pub config: Config,
 }
 
 impl Zome {
@@ -28,17 +28,12 @@ impl Zome {
     }
 }
 
-#[derive(Serialize, Deserialize)]
-pub struct ZomeConfig {
-    error_handling: ErrorHandling,
-}
-
 impl Default for Zome {
     fn default() -> Self {
         Zome {
             name: "zome_name".into(),
             description: "Desciption of zome".to_string().into(),
-            config: ZomeConfig {
+            config: Config {
                 error_handling: ErrorHandling::ThrowErrors,
             },
         }

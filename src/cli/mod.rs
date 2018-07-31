@@ -1,9 +1,10 @@
 use config_files::{
-    App as AppConfig, Capability as CapabilityConfig, EntryType as EntryTypeConfig,
+    App as AppConfig, Capability as CapabilityConfig,
+    // EntryType as EntryTypeConfig,
     Zome as ZomeConfig,
 };
 use error::{CliError, CliResult, DefaultResult};
-use holochain_dna::{zome::Zome, Dna};
+use holochain_dna::{zome::{Zome, capabilities::Capability}, Dna};
 use package::Package;
 use serde_json;
 use std::{
@@ -81,9 +82,25 @@ pub fn package() -> DefaultResult<()> {
         compiled_zomes.push(compile_zome(&zome_path, &config_file)?);
     }
 
+    let main_dna = Dna {
+        name: app_config.name.clone(),
+
+        description: app_config.description.clone(),
+
+        version: app_config.version.to_string(),
+
+        uuid: "00000000-00000-000-00000000".into(),
+
+        dna_spec_version: "2.0.0".into(),
+
+        properties: Default::default(), // should come from the config in the future
+
+        zomes: compiled_zomes,
+    };
+
     let mut pack = Package::from_app_config(app_config);
 
-    pack.zomes = compiled_zomes;
+    pack.dna = main_dna;
 
     pack.save_as(PathBuf::from(TARGET_DIR).join(PACKAGE_ARTIFACT));
 
@@ -97,6 +114,8 @@ fn compile_zome<T: AsRef<Path>>(path: T, zome_config: &ZomeConfig) -> DefaultRes
         .filter(|e| e.is_ok())
         .map(|e| e.unwrap().path())
         .collect();
+
+    let mut caps = Vec::new();
 
     for cap_path in caps_dir {
         if !cap_path.is_dir() {
@@ -115,37 +134,45 @@ fn compile_zome<T: AsRef<Path>>(path: T, zome_config: &ZomeConfig) -> DefaultRes
 
         let cap_config_file = CapabilityConfig::from_file(config_file_path)?;
 
-        let compiled_wasm = compile_capabiliy(cap_path, &cap_config_file)?;
+        let compiled_cap = compile_capabiliy(cap_path, &cap_config_file)?;
+
+        caps.push(compiled_cap);
     }
 
-    let entry_types_dir_path = path.as_ref().join(ENTRY_TYPES_DIR);
+    Ok(Zome {
+        name: zome_config.name.clone(),
+        description: zome_config.description.clone().unwrap_or_default(),
+        config: zome_config.config.clone(),
+        entry_types: Vec::new(),
+        capabilities: caps
+    })
 
-    let entry_types_dir: Vec<_> = fs::read_dir(&entry_types_dir_path)?
-        .filter(|e| e.is_ok())
-        .map(|e| e.unwrap().path())
-        .collect();
-
-    for entry_path in entry_types_dir {
-        if !entry_path.is_dir() {
-            bail!("{:?} is not a directory", entry_path);
-        }
-
-        let mut config_file = EntryTypeConfig::from_file(entry_path.join(ENTRY_TYPE_CONFIG_FILE))?;
-
-        let mut validation_file = File::open(entry_path.join(ENTRY_TYPE_VALIDATION_FILE))?;
-
-        let mut wasm_data = Vec::new();
-
-        validation_file.read_to_end(&mut wasm_data)?;
-    }
-
-    bail!("NOPE! NO SOY BLA BLA BLA");
+    // let entry_types_dir_path = path.as_ref().join(ENTRY_TYPES_DIR);
+    //
+    // let entry_types_dir: Vec<_> = fs::read_dir(&entry_types_dir_path)?
+    //     .filter(|e| e.is_ok())
+    //     .map(|e| e.unwrap().path())
+    //     .collect();
+    //
+    // for entry_path in entry_types_dir {
+    //     if !entry_path.is_dir() {
+    //         bail!("{:?} is not a directory", entry_path);
+    //     }
+    //
+    //     let mut config_file = EntryTypeConfig::from_file(entry_path.join(ENTRY_TYPE_CONFIG_FILE))?;
+    //
+    //     let mut validation_file = File::open(entry_path.join(ENTRY_TYPE_VALIDATION_FILE))?;
+    //
+    //     let mut wasm_data = Vec::new();
+    //
+    //     validation_file.read_to_end(&mut wasm_data)?;
+    // }
 }
 
 fn compile_capabiliy<T: AsRef<Path>>(
     path: T,
     cap_config: &CapabilityConfig,
-) -> DefaultResult<Vec<u8>> {
+) -> DefaultResult<Capability> {
     let path = PathBuf::from(path.as_ref());
 
     let wasm_bin_path = path.join(ZOME_WASM_BIN_NAME);
@@ -156,18 +183,18 @@ fn compile_capabiliy<T: AsRef<Path>>(
 
     file.read_to_end(&mut wasm_data)?;
 
-    Ok(wasm_data)
+    bail!("asdf");
 }
 
 pub fn new(path: PathBuf, from: Option<String>) -> DefaultResult<()> {
     if !path.exists() {
         fs::create_dir_all(&path)?;
-    }
+    } else {
+        let zomes_dir = fs::read_dir(&path)?;
 
-    let zomes_dir = fs::read_dir(&path)?;
-
-    if zomes_dir.count() > 0 {
-        bail!("directory is not empty");
+        if zomes_dir.count() > 0 {
+            bail!("directory is not empty");
+        }
     }
 
     fs::create_dir_all(path.join(ZOMES_DIR))?;
