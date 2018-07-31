@@ -18,7 +18,7 @@ impl Package {
         let AppConfig {
             authors,
             dht,
-            properties, // use properties in the future
+            properties,
             ..
         } = base;
 
