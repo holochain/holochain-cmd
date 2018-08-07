@@ -1,12 +1,13 @@
-use config_files::{
-    App as AppConfig, Capability as CapabilityConfig,
-    // EntryType as EntryTypeConfig,
-    Zome as ZomeConfig,
-};
+use base64;
+use config_files::{App as AppConfig, Capability as CapabilityConfig, Zome as ZomeConfig};
 use error::{CliError, CliResult, DefaultResult};
-use holochain_dna::{zome::{Zome, capabilities::Capability}, Dna};
+use holochain_dna::{
+    wasm::DnaWasm,
+    zome::{capabilities::Capability, Zome},
+    Dna,
+};
 use package::Package;
-use serde_json;
+use serde_json::{self, Map, Value};
 use std::{
     fs::{self, File},
     io::Read,
@@ -45,7 +46,116 @@ pub fn agent() -> CliResult<()> {
     Ok(())
 }
 
-pub fn package() -> DefaultResult<()> {
+const BUNDLE_FILE_NAME: &str = "__bundle.json";
+
+pub fn bundle() -> DefaultResult<()> {
+    let dir_obj_bundle = bundle_recurse(PathBuf::from("."))?;
+
+    let out_file = File::create(BUNDLE_FILE_NAME)?;
+
+    serde_json::to_writer_pretty(&out_file, &Value::Object(dir_obj_bundle))?;
+
+    println!("Wrote bundle file to {}", BUNDLE_FILE_NAME);
+
+    Ok(())
+}
+
+const FILES_SECTION_NAME: &str = "__FILES";
+const DIRS_SECTION_NAME: &str = "__DIRS";
+
+type Object = Map<String, Value>;
+
+pub fn bundle_recurse(path: PathBuf) -> DefaultResult<Object> {
+    let root: Vec<_> = path
+        .read_dir()?
+        .filter(|e| e.is_ok())
+        .map(|e| e.unwrap().path())
+        .collect();
+
+    let maybe_json_file_path = root
+        .iter()
+        .filter(|e| e.is_file())
+        .find(|e| e.to_str().unwrap().ends_with(".json"));
+
+    // Scan files
+    let other_files = root.iter().filter(|e| {
+        if let Some(json_file_path) = maybe_json_file_path {
+            e.is_file() && *e != json_file_path
+        } else {
+            e.is_file()
+        }
+    });
+
+    let mut files_obj = Object::new();
+    for file in other_files {
+        let mut buf = Vec::new();
+        File::open(file)?.read_to_end(&mut buf)?;
+        let encoded_content = base64::encode(&buf);
+
+        let file_name = file
+            .file_name()
+            .ok_or_else(|| format_err!("unable to retrieve file name"))?;
+
+        let file_name = file_name
+            .to_str()
+            .ok_or_else(|| format_err!("unable to retrieve file name"))?;
+
+        files_obj.insert(file_name.into(), Value::String(encoded_content));
+    }
+
+    let other_dirs = root.iter().filter(|e| e.is_dir());
+
+    let mut dirs_obj = Object::new();
+
+    for dir in other_dirs {
+        let file_name = dir
+            .file_name()
+            .ok_or_else(|| format_err!("unable to retrieve file name"))?;
+
+        let file_name = file_name
+            .to_str()
+            .ok_or_else(|| format_err!("unable to retrieve file name"))?;
+
+        let dir_obj = bundle_recurse(dir.clone())?;
+
+        dirs_obj.insert(file_name.into(), Value::Object(dir_obj));
+    }
+
+    let mut config_file: Object = if let Some(json_file_path) = maybe_json_file_path {
+        let json_file = fs::read_to_string(json_file_path)?;
+
+        serde_json::from_str(&json_file)?
+    } else {
+        Object::new()
+    };
+
+    if files_obj.len() > 0 {
+        config_file.insert(FILES_SECTION_NAME.into(), Value::Object(files_obj));
+    }
+
+    if dirs_obj.len() > 0 {
+        config_file.insert(DIRS_SECTION_NAME.into(), Value::Object(dirs_obj));
+    }
+
+    Ok(config_file)
+}
+
+pub fn unpack(path: PathBuf, to: PathBuf) -> DefaultResult<()> {
+    ensure!(path.is_file(), "'path' doesn't point ot a file");
+    ensure!(to.is_dir(), "'to' doesn't point ot a directory");
+
+    let raw_bundle_content = fs::read_to_string(&path)?;
+    let bundle_content: Object = serde_json::from_str(&raw_bundle_content)?;
+
+    Ok(())
+}
+
+/// Package smart
+pub fn package(check: bool) -> DefaultResult<()> {
+    if !check {
+        return bundle();
+    }
+
     let zomes_dir_path = PathBuf::from(ZOMES_DIR);
 
     let zomes_dir: Vec<_> = fs::read_dir(&zomes_dir_path)?
@@ -144,7 +254,7 @@ fn compile_zome<T: AsRef<Path>>(path: T, zome_config: &ZomeConfig) -> DefaultRes
         description: zome_config.description.clone().unwrap_or_default(),
         config: zome_config.config.clone(),
         entry_types: Vec::new(),
-        capabilities: caps
+        capabilities: caps,
     })
 
     // let entry_types_dir_path = path.as_ref().join(ENTRY_TYPES_DIR);
@@ -183,7 +293,12 @@ fn compile_capabiliy<T: AsRef<Path>>(
 
     file.read_to_end(&mut wasm_data)?;
 
-    bail!("asdf");
+    Ok(Capability {
+        name: Default::default(),
+        capability: Default::default(),
+        fn_declarations: Vec::new(),
+        code: DnaWasm { code: wasm_data },
+    })
 }
 
 pub fn new(path: PathBuf, from: Option<String>) -> DefaultResult<()> {
