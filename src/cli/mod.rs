@@ -10,7 +10,7 @@ use package::Package;
 use serde_json::{self, Map, Value};
 use std::{
     fs::{self, File},
-    io::Read,
+    io::{Read, Write},
     path::{Path, PathBuf},
 };
 
@@ -60,8 +60,14 @@ pub fn bundle() -> DefaultResult<()> {
     Ok(())
 }
 
-const FILES_SECTION_NAME: &str = "__FILES";
-const DIRS_SECTION_NAME: &str = "__DIRS";
+const FILE_ID: &str = "file";
+const DIR_ID: &str = "dir";
+
+const META_SECTION_NAME: &str = "__META__";
+const META_TREE_SECTION_NAME: &str = "tree";
+const META_CONFIG_SECTION_NAME: &str = "config_file";
+
+const MANIFEST_FILE_NAME: &str = "dna_manifest.json";
 
 type Object = Map<String, Value>;
 
@@ -77,22 +83,18 @@ pub fn bundle_recurse(path: PathBuf) -> DefaultResult<Object> {
         .filter(|e| e.is_file())
         .find(|e| e.to_str().unwrap().ends_with(".json"));
 
-    // Scan files
-    let other_files = root.iter().filter(|e| {
-        if let Some(json_file_path) = maybe_json_file_path {
-            e.is_file() && *e != json_file_path
-        } else {
-            e.is_file()
-        }
+    // Scan files but discard found json file
+    let all_nodes = root.iter().filter(|e| {
+        maybe_json_file_path
+            .and_then(|path| Some(*e != path))
+            .unwrap_or(true)
     });
 
-    let mut files_obj = Object::new();
-    for file in other_files {
-        let mut buf = Vec::new();
-        File::open(file)?.read_to_end(&mut buf)?;
-        let encoded_content = base64::encode(&buf);
+    let mut meta_section = Object::new();
 
-        let file_name = file
+    // Obtain the config file
+    let mut main_tree: Object = if let Some(json_file_path) = maybe_json_file_path {
+        let file_name = json_file_path
             .file_name()
             .ok_or_else(|| format_err!("unable to retrieve file name"))?;
 
@@ -100,28 +102,11 @@ pub fn bundle_recurse(path: PathBuf) -> DefaultResult<Object> {
             .to_str()
             .ok_or_else(|| format_err!("unable to retrieve file name"))?;
 
-        files_obj.insert(file_name.into(), Value::String(encoded_content));
-    }
+        meta_section.insert(
+            META_CONFIG_SECTION_NAME.into(),
+            Value::String(file_name.into()),
+        );
 
-    let other_dirs = root.iter().filter(|e| e.is_dir());
-
-    let mut dirs_obj = Object::new();
-
-    for dir in other_dirs {
-        let file_name = dir
-            .file_name()
-            .ok_or_else(|| format_err!("unable to retrieve file name"))?;
-
-        let file_name = file_name
-            .to_str()
-            .ok_or_else(|| format_err!("unable to retrieve file name"))?;
-
-        let dir_obj = bundle_recurse(dir.clone())?;
-
-        dirs_obj.insert(file_name.into(), Value::Object(dir_obj));
-    }
-
-    let mut config_file: Object = if let Some(json_file_path) = maybe_json_file_path {
         let json_file = fs::read_to_string(json_file_path)?;
 
         serde_json::from_str(&json_file)?
@@ -129,15 +114,44 @@ pub fn bundle_recurse(path: PathBuf) -> DefaultResult<Object> {
         Object::new()
     };
 
-    if files_obj.len() > 0 {
-        config_file.insert(FILES_SECTION_NAME.into(), Value::Object(files_obj));
+    // Let's go meta. Way meta!
+    let mut meta_tree = Object::new();
+
+    for node in all_nodes {
+        let file_name = node
+            .file_name()
+            .ok_or_else(|| format_err!("unable to retrieve file name"))?;
+
+        let file_name = file_name
+            .to_str()
+            .ok_or_else(|| format_err!("unable to retrieve file name"))?;
+
+        if node.is_file() {
+            meta_tree.insert(file_name.into(), Value::String(FILE_ID.into()));
+
+            let mut buf = Vec::new();
+            File::open(node)?.read_to_end(&mut buf)?;
+            let encoded_content = base64::encode(&buf);
+
+            main_tree.insert(file_name.into(), Value::String(encoded_content));
+        } else if node.is_dir() {
+            meta_tree.insert(file_name.into(), Value::String(DIR_ID.into()));
+
+            let sub_tree_content = bundle_recurse(node.clone())?;
+
+            main_tree.insert(file_name.into(), Value::Object(sub_tree_content));
+        }
     }
 
-    if dirs_obj.len() > 0 {
-        config_file.insert(DIRS_SECTION_NAME.into(), Value::Object(dirs_obj));
+    if meta_tree.len() > 0 {
+        meta_section.insert(META_TREE_SECTION_NAME.into(), Value::Object(meta_tree));
     }
 
-    Ok(config_file)
+    if meta_section.len() > 0 {
+        main_tree.insert(META_SECTION_NAME.into(), Value::Object(meta_section));
+    }
+
+    Ok(main_tree)
 }
 
 pub fn unpack(path: PathBuf, to: PathBuf) -> DefaultResult<()> {
@@ -146,6 +160,58 @@ pub fn unpack(path: PathBuf, to: PathBuf) -> DefaultResult<()> {
 
     let raw_bundle_content = fs::read_to_string(&path)?;
     let bundle_content: Object = serde_json::from_str(&raw_bundle_content)?;
+
+    unpack_recurse(bundle_content, to)?;
+
+    Ok(())
+}
+
+fn unpack_recurse(mut obj: Object, to: PathBuf) -> DefaultResult<()> {
+    if let Some(Value::Object(mut main_meta_obj)) = obj.remove(META_SECTION_NAME) {
+        // unpack the tree
+        if let Some(Value::Object(tree_meta_obj)) = main_meta_obj.remove(META_TREE_SECTION_NAME) {
+            for (meta_entry, meta_value) in tree_meta_obj {
+                let entry = obj
+                    .remove(&meta_entry)
+                    .ok_or_else(|| format_err!("INCOMPATIBLE META SECTION"))?;
+
+                if let Value::String(node_type) = meta_value {
+                    match node_type.as_str() {
+                        FILE_ID if entry.is_string() => {
+                            let base64_content = entry.as_str().unwrap().to_string();
+                            let content = base64::decode(&base64_content)?;
+
+                            File::create(to.join(meta_entry))?.write_all(&content[..])?;
+                        }
+                        DIR_ID if entry.is_object() => {
+                            let directory_obj = entry.as_object().unwrap();
+                            let dir_path = to.join(meta_entry);
+
+                            fs::create_dir(dir_path.clone())?;
+
+                            unpack_recurse(directory_obj.clone(), dir_path.clone())?;
+                        }
+                        _ => bail!("YOU SUCK AT META DATA!"),
+                    }
+                } else {
+                    bail!("YOU SUCK AT META DATA!");
+                }
+            }
+        }
+
+        // unpack the config file
+        if let Some(config_file_meta) = main_meta_obj.remove(META_CONFIG_SECTION_NAME) {
+            ensure!(
+                config_file_meta.is_string(),
+                "config file has to be a string"
+            );
+
+            if obj.len() > 0 {
+                let dna_file = File::create(to.join(config_file_meta.as_str().unwrap()))?;
+                serde_json::to_writer_pretty(dna_file, &obj)?;
+            }
+        }
+    }
 
     Ok(())
 }
