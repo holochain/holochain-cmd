@@ -201,7 +201,7 @@ mod tests {
     }
 
     #[test]
-    fn package_and_unpack() {
+    fn package_and_unpack_isolated() {
         const BUNDLE_FILE_NAME: &str = "bundle.json";
 
         fn package(shared_file_path: &PathBuf) {
