@@ -208,8 +208,6 @@ mod tests {
                 .succeeds()
                 .unwrap();
 
-            ::std::thread::sleep_ms(40000);
-
             let shared_file_path = shared_file_path.join(BUNDLE_FILE_NAME);
 
             Assert::main_binary()
