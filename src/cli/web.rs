@@ -1,5 +1,5 @@
 use error::{CliError, CliResult};
 
-pub fn web(port: u16) -> CliResult<()> {
-    Err(CliError::UnknownLanguage)
+pub fn web(_port: u16) -> CliResult<()> {
+    unimplemented!()
 }
