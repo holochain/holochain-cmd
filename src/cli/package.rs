@@ -241,6 +241,8 @@ mod tests {
         package(&shared_space.path().to_path_buf());
 
         unpack(&shared_space.path().to_path_buf());
+
+        shared_space.close().unwrap();
     }
 
     #[test]
