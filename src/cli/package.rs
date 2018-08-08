@@ -21,10 +21,6 @@ pub type Object = Map<String, Value>;
 pub fn package(strip_meta: bool, output: Option<PathBuf>) -> DefaultResult<()> {
     let output = output.unwrap_or(PathBuf::from(DEFAULT_BUNDLE_FILE_NAME));
 
-    if !output.exists() {
-        fs::create_dir_all(&output)?;
-    }
-
     let dir_obj_bundle = bundle_recurse(PathBuf::from("."), strip_meta)?;
 
     let out_file = File::create(&output)?;
@@ -125,6 +121,10 @@ pub fn unpack(path: PathBuf, to: PathBuf) -> DefaultResult<()> {
     ensure!(path.is_file(), "'path' doesn't point ot a file");
     ensure!(to.is_dir(), "'to' doesn't point ot a directory");
 
+    if !to.exists() {
+        fs::create_dir_all(&to)?;
+    }
+
     let raw_bundle_content = fs::read_to_string(&path)?;
     let bundle_content: Object = serde_json::from_str(&raw_bundle_content)?;
 
@@ -186,7 +186,8 @@ fn unpack_recurse(mut obj: Object, to: PathBuf) -> DefaultResult<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use assert_cli::Assert;
+    use assert_cmd::prelude::*;
+    use std::process::Command;
     use tempdir::TempDir;
 
     const HOLOCHAIN_TEST_PREFIX: &str = "org.holochain.test";
@@ -203,33 +204,36 @@ mod tests {
             let first_space = gen_dir();
             let first_file_path = first_space.path();
 
-            Assert::main_binary()
-                .with_args(&["init", first_file_path.to_str().unwrap()])
-                .succeeds()
-                .unwrap();
+            Command::main_binary()
+                .unwrap()
+                .args(&["init", first_file_path.to_str().unwrap()])
+                .assert()
+                .success();
 
             let bundle_file_path = shared_file_path.join(BUNDLE_FILE_NAME);
 
-            Assert::main_binary()
+            Command::main_binary()
+                .unwrap()
+                .args(&["package", "-o", bundle_file_path.to_str().unwrap()])
                 .current_dir(&first_file_path)
-                .with_args(&["package", "-o", bundle_file_path.to_str().unwrap()])
-                .succeeds()
-                .unwrap();
+                .assert()
+                .success();
         }
 
         fn second_unpack(shared_file_path: &PathBuf) {
             let second_space = gen_dir();
             let second_file_path = second_space.path();
 
-            Assert::main_binary()
+            Command::main_binary()
+                .unwrap()
                 .current_dir(&shared_file_path)
-                .with_args(&[
+                .args(&[
                     "unpack",
                     BUNDLE_FILE_NAME,
                     second_file_path.to_str().unwrap(),
                 ])
-                .succeeds()
-                .unwrap();
+                .assert()
+                .success();
         }
 
         let shared_space = gen_dir();

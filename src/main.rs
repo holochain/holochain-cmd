@@ -7,7 +7,7 @@ extern crate failure;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
-extern crate assert_cli;
+extern crate assert_cmd;
 extern crate base64;
 extern crate semver;
 extern crate serde_json;
