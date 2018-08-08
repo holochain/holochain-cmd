@@ -187,6 +187,7 @@ fn unpack_recurse(mut obj: Object, to: PathBuf) -> DefaultResult<()> {
 mod tests {
     use super::*;
     use assert_cmd::prelude::*;
+    use dir_diff;
     use std::process::Command;
     use tempfile::{Builder, TempDir};
 
@@ -240,5 +241,54 @@ mod tests {
         package(&shared_space.path().to_path_buf());
 
         unpack(&shared_space.path().to_path_buf());
+    }
+
+    #[test]
+    /// A test ensuring that packaging and unpacking a project results in the very same project
+    fn package_reverse() {
+        const BUNDLE_FILE_NAME: &str = "bundle.json";
+
+        const SOURCE_DIR_NAME: &str = "source_app";
+        const DEST_DIR_NAME: &str = "dest_app";
+
+        let shared_space = gen_dir();
+
+        let root_path = shared_space.path().to_path_buf();
+
+        let source_path = shared_space.path().join(SOURCE_DIR_NAME);
+        fs::create_dir_all(&source_path).unwrap();
+
+        // Initialize and package a project
+        Command::main_binary()
+            .unwrap()
+            .args(&["init", source_path.to_str().unwrap()])
+            .assert()
+            .success();
+
+        let bundle_file_path = root_path.join(BUNDLE_FILE_NAME);
+
+        Command::main_binary()
+            .unwrap()
+            .args(&["package", "-o", bundle_file_path.to_str().unwrap()])
+            .current_dir(&source_path)
+            .assert()
+            .success();
+
+        // Unpack the project from the generated bundle
+        let dest_path = shared_space.path().join(DEST_DIR_NAME);
+        fs::create_dir_all(&dest_path).unwrap();
+
+        Command::main_binary()
+            .unwrap()
+            .args(&[
+                "unpack",
+                bundle_file_path.to_str().unwrap(),
+                dest_path.to_str().unwrap(),
+            ])
+            .assert()
+            .success();
+
+        // Assert for equality
+        assert!(!dir_diff::is_different(&source_path, &dest_path).unwrap());
     }
 }
