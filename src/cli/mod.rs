@@ -1,17 +1,12 @@
 use base64;
-use config_files::{App as AppConfig, Capability as CapabilityConfig, Zome as ZomeConfig};
+use config_files::App as AppConfig;
 use error::{CliError, CliResult, DefaultResult};
-use holochain_dna::{
-    wasm::DnaWasm,
-    zome::{capabilities::Capability, Zome},
-    Dna,
-};
-use package::Package;
+
 use serde_json::{self, Map, Value};
 use std::{
     fs::{self, File},
     io::{Read, Write},
-    path::{Path, PathBuf},
+    path::PathBuf,
 };
 
 pub fn web(port: u16) -> CliResult<()> {
@@ -27,16 +22,18 @@ pub fn agent() -> CliResult<()> {
     Ok(())
 }
 
-const BUNDLE_FILE_NAME: &str = "__bundle.json";
+const DEFAULT_BUNDLE_FILE_NAME: &str = "bundle.json";
 
-pub fn package(strip_meta: bool) -> DefaultResult<()> {
+pub fn package(strip_meta: bool, output: Option<PathBuf>) -> DefaultResult<()> {
+    let output = output.unwrap_or(PathBuf::from(DEFAULT_BUNDLE_FILE_NAME));
+
     let dir_obj_bundle = bundle_recurse(PathBuf::from("."), strip_meta)?;
 
-    let out_file = File::create(BUNDLE_FILE_NAME)?;
+    let out_file = File::create(&output)?;
 
     serde_json::to_writer_pretty(&out_file, &Value::Object(dir_obj_bundle))?;
 
-    println!("Wrote bundle file to {}", BUNDLE_FILE_NAME);
+    println!("Wrote bundle file to {:?}", output);
 
     Ok(())
 }
