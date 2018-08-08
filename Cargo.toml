@@ -1,7 +1,10 @@
 [package]
 name = "hcdev"
 version = "0.1.0"
-authors = [ "philipbeadle <philip.beadle@live.com.au>" ]
+authors = [
+  "philipbeadle <philip.beadle@live.com.au>",
+  "Julian Laubstein <contact@julianlaubstein.de>"
+  ]
 
 [dependencies]
 holochain_core = { git = "https://github.com/holochain/holochain-rust", branch = "develop" }

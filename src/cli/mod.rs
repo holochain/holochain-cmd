@@ -27,6 +27,10 @@ const DEFAULT_BUNDLE_FILE_NAME: &str = "bundle.json";
 pub fn package(strip_meta: bool, output: Option<PathBuf>) -> DefaultResult<()> {
     let output = output.unwrap_or(PathBuf::from(DEFAULT_BUNDLE_FILE_NAME));
 
+    if !output.exists() {
+        fs::create_dir_all(&output)?;
+    }
+
     let dir_obj_bundle = bundle_recurse(PathBuf::from("."), strip_meta)?;
 
     let out_file = File::create(&output)?;
@@ -45,8 +49,6 @@ const META_SECTION_NAME: &str = "__META__";
 const META_TREE_SECTION_NAME: &str = "tree";
 const META_CONFIG_SECTION_NAME: &str = "config_file";
 
-const MANIFEST_FILE_NAME: &str = "dna_manifest.json";
-
 type Object = Map<String, Value>;
 
 pub fn bundle_recurse(path: PathBuf, strip_meta: bool) -> DefaultResult<Object> {
@@ -62,9 +64,9 @@ pub fn bundle_recurse(path: PathBuf, strip_meta: bool) -> DefaultResult<Object> 
         .find(|e| e.to_str().unwrap().ends_with(".json"));
 
     // Scan files but discard found json file
-    let all_nodes = root.iter().filter(|e| {
+    let all_nodes = root.iter().filter(|node_path| {
         maybe_json_file_path
-            .and_then(|path| Some(*e != path))
+            .and_then(|path| Some(node_path != &path))
             .unwrap_or(true)
     });
 
