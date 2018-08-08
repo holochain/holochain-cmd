@@ -188,25 +188,28 @@ mod tests {
     use super::*;
     use assert_cmd::prelude::*;
     use std::process::Command;
-    use tempdir::TempDir;
+    use tempfile::{Builder, TempDir};
 
     const HOLOCHAIN_TEST_PREFIX: &str = "org.holochain.test";
 
     fn gen_dir() -> TempDir {
-        TempDir::new(HOLOCHAIN_TEST_PREFIX).unwrap()
+        Builder::new()
+            .prefix(HOLOCHAIN_TEST_PREFIX)
+            .tempdir()
+            .unwrap()
     }
 
     #[test]
     fn package_and_unpack() {
         const BUNDLE_FILE_NAME: &str = "bundle.json";
 
-        fn first_package(shared_file_path: &PathBuf) {
-            let first_space = gen_dir();
-            let first_file_path = first_space.path();
+        fn package(shared_file_path: &PathBuf) {
+            let temp_space = gen_dir();
+            let temp_dir_path = temp_space.path();
 
             Command::main_binary()
                 .unwrap()
-                .args(&["init", first_file_path.to_str().unwrap()])
+                .args(&["init", temp_dir_path.to_str().unwrap()])
                 .assert()
                 .success();
 
@@ -215,31 +218,27 @@ mod tests {
             Command::main_binary()
                 .unwrap()
                 .args(&["package", "-o", bundle_file_path.to_str().unwrap()])
-                .current_dir(&first_file_path)
+                .current_dir(&temp_dir_path)
                 .assert()
                 .success();
         }
 
-        fn second_unpack(shared_file_path: &PathBuf) {
-            let second_space = gen_dir();
-            let second_file_path = second_space.path();
+        fn unpack(shared_file_path: &PathBuf) {
+            let temp_space = gen_dir();
+            let temp_dir_path = temp_space.path();
 
             Command::main_binary()
                 .unwrap()
                 .current_dir(&shared_file_path)
-                .args(&[
-                    "unpack",
-                    BUNDLE_FILE_NAME,
-                    second_file_path.to_str().unwrap(),
-                ])
+                .args(&["unpack", BUNDLE_FILE_NAME, temp_dir_path.to_str().unwrap()])
                 .assert()
                 .success();
         }
 
         let shared_space = gen_dir();
 
-        first_package(&shared_space.path().to_path_buf());
+        package(&shared_space.path().to_path_buf());
 
-        second_unpack(&shared_space.path().to_path_buf());
+        unpack(&shared_space.path().to_path_buf());
     }
 }

@@ -11,7 +11,7 @@ extern crate assert_cmd;
 extern crate base64;
 extern crate semver;
 extern crate serde_json;
-extern crate tempdir;
+extern crate tempfile;
 extern crate uuid;
 
 mod cli;
