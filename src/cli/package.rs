@@ -189,10 +189,10 @@ mod tests {
     use assert_cli::Assert;
     use tempdir::TempDir;
 
-    const HOLOCHAIN_TEST_DIR: &str = "holochain_test";
+    const HOLOCHAIN_TEST_PREFIX: &str = "org.holochain.test";
 
     fn gen_dir() -> TempDir {
-        TempDir::new(HOLOCHAIN_TEST_DIR).unwrap()
+        TempDir::new(HOLOCHAIN_TEST_PREFIX).unwrap()
     }
 
     #[test]
