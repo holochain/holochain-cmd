@@ -197,7 +197,7 @@ mod tests {
     }
 
     #[test]
-    fn generic_eric() {
+    fn package_and_unpack() {
         const BUNDLE_FILE_NAME: &str = "bundle.json";
 
         fn first_package(shared_file_path: &PathBuf) {
