@@ -3,7 +3,7 @@ use error::DefaultResult;
 use serde_json::{self, Map, Value};
 use std::{
     fs::{self, File},
-    io::Read,
+    io::{Read, Write},
     path::PathBuf,
 };
 
@@ -119,4 +119,125 @@ fn bundle_recurse(path: PathBuf, strip_meta: bool) -> DefaultResult<Object> {
     }
 
     Ok(main_tree)
+}
+
+pub fn unpack(path: PathBuf, to: PathBuf) -> DefaultResult<()> {
+    ensure!(path.is_file(), "'path' doesn't point ot a file");
+    ensure!(to.is_dir(), "'to' doesn't point ot a directory");
+
+    let raw_bundle_content = fs::read_to_string(&path)?;
+    let bundle_content: Object = serde_json::from_str(&raw_bundle_content)?;
+
+    unpack_recurse(bundle_content, to)?;
+
+    Ok(())
+}
+
+fn unpack_recurse(mut obj: Object, to: PathBuf) -> DefaultResult<()> {
+    if let Some(Value::Object(mut main_meta_obj)) = obj.remove(META_SECTION_NAME) {
+        // unpack the tree
+        if let Some(Value::Object(tree_meta_obj)) = main_meta_obj.remove(META_TREE_SECTION_NAME) {
+            for (meta_entry, meta_value) in tree_meta_obj {
+                let entry = obj
+                    .remove(&meta_entry)
+                    .ok_or_else(|| format_err!("incompatible meta section"))?;
+
+                if let Value::String(node_type) = meta_value {
+                    match node_type.as_str() {
+                        META_FILE_ID if entry.is_string() => {
+                            let base64_content = entry.as_str().unwrap().to_string();
+                            let content = base64::decode(&base64_content)?;
+
+                            File::create(to.join(meta_entry))?.write_all(&content[..])?;
+                        }
+                        META_DIR_ID if entry.is_object() => {
+                            let directory_obj = entry.as_object().unwrap();
+                            let dir_path = to.join(meta_entry);
+
+                            fs::create_dir(dir_path.clone())?;
+
+                            unpack_recurse(directory_obj.clone(), dir_path.clone())?;
+                        }
+                        _ => bail!("incompatible meta section"),
+                    }
+                } else {
+                    bail!("incompatible meta section");
+                }
+            }
+        }
+
+        // unpack the config file
+        if let Some(config_file_meta) = main_meta_obj.remove(META_CONFIG_SECTION_NAME) {
+            ensure!(
+                config_file_meta.is_string(),
+                "config file has to be a string"
+            );
+
+            if obj.len() > 0 {
+                let dna_file = File::create(to.join(config_file_meta.as_str().unwrap()))?;
+                serde_json::to_writer_pretty(dna_file, &obj)?;
+            }
+        }
+    }
+
+    Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use assert_cli::Assert;
+    use tempdir::TempDir;
+
+    const HOLOCHAIN_TEST_DIR: &str = "holochain_test";
+
+    fn gen_dir() -> TempDir {
+        TempDir::new(HOLOCHAIN_TEST_DIR).unwrap()
+    }
+
+    #[test]
+    fn generic_eric() {
+        const BUNDLE_FILE_NAME: &str = "bundle.json";
+
+        fn first_package(shared_file_path: &PathBuf) {
+            let first_space = gen_dir();
+            let first_file_path = first_space.path();
+
+            Assert::main_binary()
+                .with_args(&["init", first_file_path.to_str().unwrap()])
+                .succeeds()
+                .unwrap();
+
+            ::std::thread::sleep_ms(40000);
+
+            let shared_file_path = shared_file_path.join(BUNDLE_FILE_NAME);
+
+            Assert::main_binary()
+                .current_dir(&first_file_path)
+                .with_args(&["package", "-o", shared_file_path.to_str().unwrap()])
+                .succeeds()
+                .unwrap();
+        }
+
+        fn second_unpack(shared_file_path: &PathBuf) {
+            let second_space = gen_dir();
+            let second_file_path = second_space.path();
+
+            Assert::main_binary()
+                .current_dir(&shared_file_path)
+                .with_args(&[
+                    "unpack",
+                    BUNDLE_FILE_NAME,
+                    second_file_path.to_str().unwrap(),
+                ])
+                .succeeds()
+                .unwrap();
+        }
+
+        let shared_space = gen_dir();
+
+        first_package(&shared_space.path().to_path_buf());
+
+        second_unpack(&shared_space.path().to_path_buf());
+    }
 }
