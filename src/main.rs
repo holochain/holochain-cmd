@@ -134,46 +134,46 @@ mod tests {
     }
 
     #[test]
-    fn generate_without_args() {
-        Assert::main_binary()
-            .with_args(&["generate"])
-            .fails()
-            .unwrap();
+    fn generic_eric() {
+        const BUNDLE_FILE_NAME: &str = "bogus_bundle.json";
 
-        Assert::main_binary().with_args(&["g"]).fails().unwrap();
-    }
+        let shared_space = gen_dir();
 
-    #[test]
-    fn init_base_test() {
-        const TEST_DIR: &str = "___init_base_test";
+        {
+            let first_space = gen_dir();
 
-        let tmp_dir = gen_dir();
-        let file_path = tmp_dir.path().join(TEST_DIR);
+            let first_file_path = first_space.path();
 
-        Assert::main_binary()
-            .with_args(&["init", file_path.to_str().unwrap()])
-            .succeeds()
-            .unwrap();
-    }
+            Assert::main_binary()
+                .with_args(&["init", first_file_path.to_str().unwrap()])
+                .succeeds()
+                .unwrap();
 
-    #[test]
-    fn double_init_test() {
-        const TEST_DIR: &str = "___double_init_test";
+            let shared_file_path = shared_space.path().join(BUNDLE_FILE_NAME);
 
-        let tmp_dir = gen_dir();
-        let file_path = tmp_dir.path().join(TEST_DIR);
+            Assert::main_binary()
+                .current_dir(&first_file_path)
+                .with_args(&["package", "-o", shared_file_path.to_str().unwrap()])
+                .succeeds()
+                .unwrap();
+        }
 
-        Assert::main_binary()
-            .with_args(&["init", file_path.to_str().unwrap()])
-            .succeeds()
-            .unwrap();
+        {
+            let second_space = gen_dir();
 
-        Assert::main_binary()
-            .with_args(&["init", file_path.to_str().unwrap()])
-            .fails()
-            .and()
-            .stderr()
-            .contains("directory is not empty")
-            .unwrap();
+            let shared_file_path = shared_space.path();
+
+            let second_file_path = second_space.path();
+
+            Assert::main_binary()
+                .current_dir(&shared_file_path)
+                .with_args(&[
+                    "unpack",
+                    BUNDLE_FILE_NAME,
+                    second_file_path.to_str().unwrap(),
+                ])
+                .succeeds()
+                .unwrap();
+        }
     }
 }
