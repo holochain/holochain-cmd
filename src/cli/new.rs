@@ -1,12 +1,12 @@
 use config_files::App as AppConfig;
-use error::{CliError, CliResult, DefaultResult};
+use error::DefaultResult;
 use serde_json;
 use std::{
     fs::{self, File},
     path::PathBuf,
 };
 
-pub fn new(path: PathBuf, from: Option<String>) -> DefaultResult<()> {
+pub fn new(path: PathBuf, _from: Option<String>) -> DefaultResult<()> {
     if !path.exists() {
         fs::create_dir_all(&path)?;
     } else {

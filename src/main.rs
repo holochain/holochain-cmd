@@ -17,7 +17,6 @@ extern crate uuid;
 mod cli;
 mod config_files;
 mod error;
-mod package;
 
 use error::{HolochainError, HolochainResult};
 use std::path::PathBuf;

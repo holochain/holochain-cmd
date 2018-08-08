@@ -1,4 +1,4 @@
-use error::{CliError, CliResult};
+use error::CliResult;
 
 pub fn web(_port: u16) -> CliResult<()> {
     unimplemented!()
