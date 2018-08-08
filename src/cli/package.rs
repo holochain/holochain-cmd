@@ -208,11 +208,11 @@ mod tests {
                 .succeeds()
                 .unwrap();
 
-            let shared_file_path = shared_file_path.join(BUNDLE_FILE_NAME);
+            let bundle_file_path = shared_file_path.join(BUNDLE_FILE_NAME);
 
             Assert::main_binary()
                 .current_dir(&first_file_path)
-                .with_args(&["package", "-o", shared_file_path.to_str().unwrap()])
+                .with_args(&["package", "-o", bundle_file_path.to_str().unwrap()])
                 .succeeds()
                 .unwrap();
         }
