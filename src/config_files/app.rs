@@ -1,18 +1,18 @@
-use config::Dht;
+use config_files::Dht;
 use semver::Version;
-use std::collections::HashMap;
+use serde_json::Value;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct App {
-    name: String,
-    description: String,
-    authors: Vec<Author>,
-    version: Version,
-    dht: Dht,
-    properties: HashMap<String, String>,
+    pub name: String,
+    pub description: String,
+    pub authors: Vec<Author>,
+    pub version: Version,
+    pub dht: Dht,
+    pub properties: Value,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Author {
     indentifier: String,
     public_key_source: String,
@@ -31,7 +31,7 @@ impl Default for App {
                 signature: "".into(),
             }],
             dht: Dht {},
-            properties: HashMap::new(),
+            properties: Default::default(),
         }
     }
 }

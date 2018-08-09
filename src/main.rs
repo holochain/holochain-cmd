@@ -7,16 +7,17 @@ extern crate failure;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
-extern crate assert_cli;
+extern crate assert_cmd;
+extern crate base64;
+extern crate dir_diff;
 extern crate semver;
 extern crate serde_json;
-extern crate tempdir;
+extern crate tempfile;
 extern crate uuid;
 
 mod cli;
-mod config;
+mod config_files;
 mod error;
-mod project;
 
 use error::{HolochainError, HolochainResult};
 use std::path::PathBuf;
@@ -45,7 +46,22 @@ enum Cli {
         alias = "p",
         about = "Builds the current Holochain app into a .hcpkg file"
     )]
-    Package,
+    Package {
+        #[structopt(
+            long = "strip-meta",
+            help = "Strips all __META__ sections off the target bundle. Makes unpacking of the bundle impossible"
+        )]
+        strip_meta: bool,
+        #[structopt(long = "output", short = "o", parse(from_os_str))]
+        output: Option<PathBuf>,
+    },
+    #[structopt(name = "unpack")]
+    Unpack {
+        #[structopt(parse(from_os_str))]
+        path: PathBuf,
+        #[structopt(parse(from_os_str))]
+        to: PathBuf,
+    },
     #[structopt(
         name = "init",
         alias = "i",
@@ -90,7 +106,12 @@ fn run() -> HolochainResult<()> {
     match args {
         Cli::Web { port } => cli::web(port).or_else(|err| Err(HolochainError::Cli(err)))?,
         Cli::Agent => cli::agent().or_else(|err| Err(HolochainError::Cli(err)))?,
-        Cli::Package => cli::package().or_else(|err| Err(HolochainError::Default(err)))?,
+        Cli::Package { strip_meta, output } => {
+            cli::package(strip_meta, output).or_else(|err| Err(HolochainError::Default(err)))?
+        }
+        Cli::Unpack { path, to } => {
+            cli::unpack(path, to).or_else(|err| Err(HolochainError::Default(err)))?
+        }
         Cli::Init { path, from } => {
             cli::new(path, from).or_else(|err| Err(HolochainError::Default(err)))?
         }
@@ -98,61 +119,4 @@ fn run() -> HolochainResult<()> {
     }
 
     Ok(())
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use assert_cli::Assert;
-    use tempdir::TempDir;
-
-    const HOLOCHAIN_TEST_DIR: &str = "holochain_test";
-
-    fn gen_dir() -> TempDir {
-        TempDir::new(HOLOCHAIN_TEST_DIR).unwrap()
-    }
-
-    #[test]
-    fn generate_without_args() {
-        Assert::main_binary()
-            .with_args(&["generate"])
-            .fails()
-            .unwrap();
-
-        Assert::main_binary().with_args(&["g"]).fails().unwrap();
-    }
-
-    #[test]
-    fn init_base_test() {
-        const TEST_DIR: &str = "___init_base_test";
-
-        let tmp_dir = gen_dir();
-        let file_path = tmp_dir.path().join(TEST_DIR);
-
-        Assert::main_binary()
-            .with_args(&["init", file_path.to_str().unwrap()])
-            .succeeds()
-            .unwrap();
-    }
-
-    #[test]
-    fn double_init_test() {
-        const TEST_DIR: &str = "___double_init_test";
-
-        let tmp_dir = gen_dir();
-        let file_path = tmp_dir.path().join(TEST_DIR);
-
-        Assert::main_binary()
-            .with_args(&["init", file_path.to_str().unwrap()])
-            .succeeds()
-            .unwrap();
-
-        Assert::main_binary()
-            .with_args(&["init", file_path.to_str().unwrap()])
-            .fails()
-            .and()
-            .stderr()
-            .contains("directory is not empty")
-            .unwrap();
-    }
 }

@@ -1,7 +1,10 @@
 [package]
 name = "hcdev"
 version = "0.1.0"
-authors = [ "philipbeadle <philip.beadle@live.com.au>" ]
+authors = [
+  "philipbeadle <philip.beadle@live.com.au>",
+  "Julian Laubstein <contact@julianlaubstein.de>"
+  ]
 
 [dependencies]
 holochain_core = { git = "https://github.com/holochain/holochain-rust", branch = "develop" }
@@ -13,5 +16,7 @@ serde_derive = "1.0"
 serde_json = "1.0"
 semver = { version = "0.9.0", features = ["serde"] }
 uuid = { version = "^0.6", features = ["v4", "serde"] }
-assert_cli = "0.6"
-tempdir = "0.3"
+assert_cmd = "0.9.0"
+tempfile = "3"
+base64 = "0.9"
+dir-diff = "0.3.1"
