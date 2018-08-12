@@ -6,7 +6,6 @@ use std::{
     fs::{self, File},
     io::{Read, Write},
     path::PathBuf,
-    process::Command,
 };
 
 pub const BUILD_CONFIG_FILE_NAME: &str = ".build";
@@ -24,25 +23,6 @@ pub const META_TREE_SECTION_NAME: &str = "tree";
 pub const META_CONFIG_SECTION_NAME: &str = "config_file";
 
 pub type Object = Map<String, Value>;
-
-fn build_project(base_path: PathBuf, build: &Build) -> DefaultResult<String> {
-    for (bin, args) in &build.steps {
-        Command::new(bin)
-            .args(args)
-            .current_dir(&base_path)
-            .spawn()?;
-    }
-
-    let artifact_path = base_path.join(&build.artifact);
-
-    if artifact_path.exists() && artifact_path.is_file() {
-        let wasm = fs::read_to_string(&artifact_path)?;
-
-        Ok(base64::encode(&wasm))
-    } else {
-        bail!("artifact path either doesn't point to a file or doesn't exist")
-    }
-}
 
 pub fn package(strip_meta: bool, output: Option<PathBuf>) -> DefaultResult<()> {
     let output = output.unwrap_or(PathBuf::from(DEFAULT_BUNDLE_FILE_NAME));
@@ -132,9 +112,7 @@ fn bundle_recurse(path: PathBuf, strip_meta: bool) -> DefaultResult<Object> {
 
                 let build = Build::from_file(build_config)?;
 
-                ensure!(build.is_valid(), "invalid build config");
-
-                let wasm = build_project(node.clone(), &build)?;
+                let wasm = build.run(&node)?;
 
                 main_tree.insert(file_name.into(), Value::String(wasm));
             } else {
