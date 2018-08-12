@@ -1,22 +1,48 @@
 use base64;
+use config_files::Build;
 use error::DefaultResult;
 use serde_json::{self, Map, Value};
 use std::{
     fs::{self, File},
     io::{Read, Write},
     path::PathBuf,
+    process::Command,
 };
+
+pub const BUILD_CONFIG_FILE_NAME: &str = ".build";
+
+pub const WASM_FILE_EXTENSION: &str = "wasm";
 
 pub const DEFAULT_BUNDLE_FILE_NAME: &str = "bundle.json";
 
 pub const META_FILE_ID: &str = "file";
 pub const META_DIR_ID: &str = "dir";
+pub const META_BIN_ID: &str = "bin";
 
 pub const META_SECTION_NAME: &str = "__META__";
 pub const META_TREE_SECTION_NAME: &str = "tree";
 pub const META_CONFIG_SECTION_NAME: &str = "config_file";
 
 pub type Object = Map<String, Value>;
+
+fn build_project(base_path: PathBuf, build: &Build) -> DefaultResult<String> {
+    for (bin, args) in &build.steps {
+        Command::new(bin)
+            .args(args)
+            .current_dir(&base_path)
+            .spawn()?;
+    }
+
+    let artifact_path = base_path.join(&build.artifact);
+
+    if artifact_path.exists() && artifact_path.is_file() {
+        let wasm = fs::read_to_string(&artifact_path)?;
+
+        Ok(base64::encode(&wasm))
+    } else {
+        bail!("artifact path either doesn't point to a file or doesn't exist")
+    }
+}
 
 pub fn package(strip_meta: bool, output: Option<PathBuf>) -> DefaultResult<()> {
     let output = output.unwrap_or(PathBuf::from(DEFAULT_BUNDLE_FILE_NAME));
@@ -96,11 +122,28 @@ fn bundle_recurse(path: PathBuf, strip_meta: bool) -> DefaultResult<Object> {
 
             main_tree.insert(file_name.into(), Value::String(encoded_content));
         } else if node.is_dir() {
-            meta_tree.insert(file_name.into(), Value::String(META_DIR_ID.into()));
+            if let Some(build_config) = node
+                .read_dir()?
+                .filter(|e| e.is_ok())
+                .map(|e| e.unwrap().path())
+                .find(|path| path.ends_with(BUILD_CONFIG_FILE_NAME))
+            {
+                meta_tree.insert(file_name.into(), Value::String(META_BIN_ID.into()));
 
-            let sub_tree_content = bundle_recurse(node.clone(), strip_meta)?;
+                let build = Build::from_file(build_config)?;
 
-            main_tree.insert(file_name.into(), Value::Object(sub_tree_content));
+                ensure!(build.is_valid(), "invalid build config");
+
+                let wasm = build_project(node.clone(), &build)?;
+
+                main_tree.insert(file_name.into(), Value::String(wasm));
+            } else {
+                meta_tree.insert(file_name.into(), Value::String(META_DIR_ID.into()));
+
+                let sub_tree_content = bundle_recurse(node.clone(), strip_meta)?;
+
+                main_tree.insert(file_name.into(), Value::Object(sub_tree_content));
+            }
         }
     }
 
@@ -144,11 +187,17 @@ fn unpack_recurse(mut obj: Object, to: PathBuf) -> DefaultResult<()> {
 
                 if let Value::String(node_type) = meta_value {
                     match node_type.as_str() {
-                        META_FILE_ID if entry.is_string() => {
+                        id @ META_FILE_ID | id @ META_BIN_ID if entry.is_string() => {
                             let base64_content = entry.as_str().unwrap().to_string();
                             let content = base64::decode(&base64_content)?;
 
-                            File::create(to.join(meta_entry))?.write_all(&content[..])?;
+                            let mut file_path = to.join(meta_entry);
+
+                            if id == META_BIN_ID {
+                                file_path.set_extension(WASM_FILE_EXTENSION);
+                            }
+
+                            File::create(file_path)?.write_all(&content[..])?;
                         }
                         META_DIR_ID if entry.is_object() => {
                             let directory_obj = entry.as_object().unwrap();
