@@ -1,11 +1,12 @@
 use base64;
+use colored::*;
 use error::DefaultResult;
 use serde_json;
 use std::{
     collections::HashMap,
     fs::{self, File},
     path::{Path, PathBuf},
-    process::Command,
+    process::{Command, Stdio},
 };
 
 #[derive(Clone, Deserialize)]
@@ -26,7 +27,23 @@ impl Build {
     /// Starts the build using the supplied build steps and returns the contents of the artifact
     pub fn run(&self, base_path: &PathBuf) -> DefaultResult<String> {
         for (bin, args) in &self.steps {
-            Command::new(bin).args(args).current_dir(base_path).spawn()?;
+            let pretty_command = format!("{} {}", bin.green(), args.join(" ").cyan());
+
+            println!("Executing command {}", pretty_command);
+
+            let status = Command::new(bin)
+                .args(args)
+                .current_dir(base_path)
+                .stdin(Stdio::null())
+                .stdout(Stdio::null())
+                .stderr(Stdio::null())
+                .status()?;
+
+            ensure!(
+                status.success(),
+                "command {:?} was not successful",
+                pretty_command
+            );
         }
 
         let artifact_path = base_path.join(&self.artifact);

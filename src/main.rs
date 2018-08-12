@@ -9,6 +9,7 @@ extern crate serde;
 extern crate serde_derive;
 extern crate assert_cmd;
 extern crate base64;
+extern crate colored;
 extern crate dir_diff;
 extern crate semver;
 extern crate serde_json;
