@@ -1,5 +1,5 @@
-use error::CliResult;
+use error::DefaultResult;
 
-pub fn agent() -> CliResult<()> {
+pub fn agent() -> DefaultResult<()> {
     unimplemented!()
 }
