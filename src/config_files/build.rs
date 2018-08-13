@@ -4,9 +4,10 @@ use error::DefaultResult;
 use serde_json;
 use std::{
     collections::HashMap,
-    fs::{self, File},
+    fs::File,
+    io::Read,
     path::{Path, PathBuf},
-    process::{Command, Stdio},
+    process::Command,
 };
 
 #[derive(Clone, Deserialize)]
@@ -29,14 +30,11 @@ impl Build {
         for (bin, args) in &self.steps {
             let pretty_command = format!("{} {}", bin.green(), args.join(" ").cyan());
 
-            println!("Executing command {}", pretty_command);
+            println!("> {}", pretty_command);
 
             let status = Command::new(bin)
                 .args(args)
                 .current_dir(base_path)
-                .stdin(Stdio::null())
-                .stdout(Stdio::null())
-                .stderr(Stdio::null())
                 .status()?;
 
             ensure!(
@@ -49,9 +47,10 @@ impl Build {
         let artifact_path = base_path.join(&self.artifact);
 
         if artifact_path.exists() && artifact_path.is_file() {
-            let wasm = fs::read_to_string(&artifact_path)?;
+            let mut wasm_buf = Vec::new();
+            File::open(&artifact_path)?.read_to_end(&mut wasm_buf)?;
 
-            Ok(base64::encode(&wasm))
+            Ok(base64::encode(&wasm_buf))
         } else {
             bail!("artifact path either doesn't point to a file or doesn't exist")
         }
