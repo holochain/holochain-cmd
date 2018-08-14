@@ -89,10 +89,10 @@ enum Cli {
     )]
     Generate {
         #[structopt(
-            help = "The path of the zome that will be generated",
+            help = "The path to the zome that should be generated (usually in ./zomes/)",
             parse(from_os_str)
         )]
-        zome_name: PathBuf,
+        zome: PathBuf,
         #[structopt(
             help = "The language of the generated zome",
             default_value = "rust"
@@ -124,10 +124,9 @@ fn run() -> HolochainResult<()> {
         Cli::Init { path, from } => {
             cli::new(path, from).or_else(|err| Err(HolochainError::Default(err)))?
         }
-        Cli::Generate {
-            zome_name,
-            language,
-        } => cli::generate(zome_name, language).or_else(|err| Err(HolochainError::Default(err)))?,
+        Cli::Generate { zome, language } => {
+            cli::generate(zome, language).or_else(|err| Err(HolochainError::Default(err)))?
+        }
     }
 
     Ok(())
