@@ -11,9 +11,6 @@ extern crate assert_cmd;
 extern crate base64;
 extern crate colored;
 extern crate dir_diff;
-extern crate regex;
-#[macro_use]
-extern crate lazy_static;
 extern crate semver;
 #[macro_use]
 extern crate serde_json;
@@ -97,10 +94,10 @@ enum Cli {
         )]
         zome_name: PathBuf,
         #[structopt(
-            help = "A list of capabilities that will be scaffolded (e.g. blog:rust web_frontend:typescript)",
-            raw(required = "true")
+            help = "The language of the generated zome",
+            default_value = "rust"
         )]
-        capabilities: Vec<String>,
+        language: String,
     },
 }
 
@@ -129,10 +126,8 @@ fn run() -> HolochainResult<()> {
         }
         Cli::Generate {
             zome_name,
-            capabilities,
-        } => {
-            cli::generate(zome_name, capabilities).or_else(|err| Err(HolochainError::Default(err)))?
-        }
+            language,
+        } => cli::generate(zome_name, language).or_else(|err| Err(HolochainError::Default(err)))?,
     }
 
     Ok(())

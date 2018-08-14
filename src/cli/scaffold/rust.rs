@@ -28,16 +28,15 @@ impl RustScaffold {
 
 impl Scaffold for RustScaffold {
     fn gen<P: AsRef<Path>>(&self, base_path: P) -> DefaultResult<()> {
-        let code_dir = base_path
-            .as_ref()
-            .to_path_buf()
-            .join(package::CODE_DIR_NAME);
+        fs::create_dir_all(&base_path)?;
 
-        fs::create_dir_all(&code_dir)?;
+        util::run_cmd(
+            base_path.as_ref().to_path_buf(),
+            "cargo".into(),
+            vec!["init".to_owned()],
+        )?;
 
-        util::run_cmd(code_dir.clone(), "cargo".into(), vec!["init".to_owned()])?;
-
-        let build_file_path = code_dir.join(package::BUILD_CONFIG_FILE_NAME);
+        let build_file_path = base_path.as_ref().join(package::BUILD_CONFIG_FILE_NAME);
 
         let file = File::create(build_file_path)?;
 
