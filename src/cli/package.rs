@@ -139,13 +139,13 @@ fn bundle_recurse(path: PathBuf, strip_meta: bool) -> DefaultResult<Object> {
 }
 
 pub fn unpack(path: PathBuf, to: PathBuf) -> DefaultResult<()> {
-    ensure!(path.is_file(), "'path' doesn't point ot a file");
+    ensure!(path.is_file(), "argument \"path\" doesn't point ot a file");
 
     if !to.exists() {
         fs::create_dir_all(&to)?;
     }
 
-    ensure!(to.is_dir(), "'to' doesn't point ot a directory");
+    ensure!(to.is_dir(), "argument \"to\" doesn't point to a directory");
 
     let raw_bundle_content = fs::read_to_string(&path)?;
     let bundle_content: Object = serde_json::from_str(&raw_bundle_content)?;

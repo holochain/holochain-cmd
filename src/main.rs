@@ -48,7 +48,10 @@ enum Cli {
         #[structopt(long = "output", short = "o", parse(from_os_str))]
         output: Option<PathBuf>,
     },
-    #[structopt(name = "unpack")]
+    #[structopt(
+        name = "unpack",
+        about = "Unpacks a Holochain bundle into it's original file system structure"
+    )]
     Unpack {
         #[structopt(parse(from_os_str))]
         path: PathBuf,
