@@ -11,6 +11,9 @@ extern crate assert_cmd;
 extern crate base64;
 extern crate colored;
 extern crate dir_diff;
+extern crate regex;
+#[macro_use]
+extern crate lazy_static;
 extern crate semver;
 extern crate serde_json;
 extern crate tempfile;
@@ -19,6 +22,7 @@ extern crate uuid;
 mod cli;
 mod config_files;
 mod error;
+mod util;
 
 use error::{HolochainError, HolochainResult};
 use std::path::PathBuf;
@@ -76,8 +80,8 @@ enum Cli {
         about = "Generates a new zome and scaffolds the given capabilities"
     )]
     Generate {
-        #[structopt(help = "The name of the zome that will be generated")]
-        zome_name: String,
+        #[structopt(help = "The path of the zome that will be generated", parse(from_os_str))]
+        zome_name: PathBuf,
         #[structopt(
             help = "A list of capabilities that will be scaffolded (e.g. blog:rust web_frontend:typescript)",
             raw(required = "true")
@@ -109,7 +113,12 @@ fn run() -> HolochainResult<()> {
         Cli::Init { path, from } => {
             cli::new(path, from).or_else(|err| Err(HolochainError::Default(err)))?
         }
-        Cli::Generate { .. } => unimplemented!(),
+        Cli::Generate {
+            zome_name,
+            capabilities,
+        } => {
+            cli::generate(zome_name, capabilities).or_else(|err| Err(HolochainError::Default(err)))?
+        }
     }
 
     Ok(())

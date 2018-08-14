@@ -1,5 +1,4 @@
 use base64;
-use colored::*;
 use error::DefaultResult;
 use serde_json;
 use std::{
@@ -7,8 +6,8 @@ use std::{
     fs::File,
     io::Read,
     path::{Path, PathBuf},
-    process::Command,
 };
+use util;
 
 #[derive(Clone, Deserialize)]
 pub struct Build {
@@ -28,20 +27,7 @@ impl Build {
     /// Starts the build using the supplied build steps and returns the contents of the artifact
     pub fn run(&self, base_path: &PathBuf) -> DefaultResult<String> {
         for (bin, args) in &self.steps {
-            let pretty_command = format!("{} {}", bin.green(), args.join(" ").cyan());
-
-            println!("> {}", pretty_command);
-
-            let status = Command::new(bin)
-                .args(args)
-                .current_dir(base_path)
-                .status()?;
-
-            ensure!(
-                status.success(),
-                "command {:?} was not successful",
-                pretty_command
-            );
+            util::run_cmd(base_path.to_path_buf(), bin.to_string(), args.clone())?;
         }
 
         let artifact_path = base_path.join(&self.artifact);
