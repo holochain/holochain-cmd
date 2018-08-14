@@ -1,4 +1,5 @@
 use base64;
+use colored::*;
 use config_files::Build;
 use error::DefaultResult;
 use serde_json::{self, Map, Value};
@@ -35,7 +36,7 @@ pub fn package(strip_meta: bool, output: Option<PathBuf>) -> DefaultResult<()> {
 
     serde_json::to_writer_pretty(&out_file, &Value::Object(dir_obj_bundle))?;
 
-    println!("Wrote bundle file to {:?}", output);
+    println!("{} bundle file at {:?}", "Created".green().bold(), output);
 
     Ok(())
 }

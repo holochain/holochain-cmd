@@ -3,7 +3,13 @@ use cli::{
     scaffold::{self, Scaffold},
 };
 use error::DefaultResult;
-use std::{fs, path::PathBuf};
+use serde_json;
+use std::{
+    fs::{self, File},
+    path::PathBuf,
+};
+
+pub const ZOME_CONFIG_FILE_NAME: &str = "zome.json";
 
 pub fn generate(zome_name: PathBuf, language: String) -> DefaultResult<()> {
     if !zome_name.exists() {
@@ -15,9 +21,28 @@ pub fn generate(zome_name: PathBuf, language: String) -> DefaultResult<()> {
         "argument \"zome_name\" doesn't point to a directory"
     );
 
+    let file_name = zome_name
+        .file_name()
+        .ok_or_else(|| format_err!("unable to retrieve file name"))?;
+
+    let file_name = file_name
+        .to_str()
+        .ok_or_else(|| format_err!("unable to retrieve file name"))?;
+
+    let zome_config_json = json!{
+        {
+            "name": "",
+            "description": format!("The {} App", file_name)
+        }
+    };
+
+    let file = File::create(zome_name.join(ZOME_CONFIG_FILE_NAME))?;
+    serde_json::to_writer_pretty(file, &zome_config_json)?;
+
     let code_dir = zome_name.join(CODE_DIR_NAME);
     fs::create_dir_all(&code_dir)?;
 
+    // match against all supported languages
     match language.as_str() {
         "rust" => scaffold(scaffold::rust::RustScaffold::new(), code_dir)?,
         _ => bail!("unsupported language: {}", language),

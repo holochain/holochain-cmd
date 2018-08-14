@@ -1,3 +1,4 @@
+use colored::*;
 use config_files::App as AppConfig;
 use error::DefaultResult;
 use serde_json;
@@ -25,7 +26,11 @@ pub fn new(path: PathBuf, _from: Option<String>) -> DefaultResult<()> {
     let app_config_file = File::create(path.join("app.json"))?;
     serde_json::to_writer_pretty(app_config_file, &AppConfig::default())?;
 
-    println!("Created new Holochain project at: {:?}", path);
+    println!(
+        "{} new Holochain project at: {:?}",
+        "Created".green().bold(),
+        path
+    );
 
     Ok(())
 }
