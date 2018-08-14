@@ -1,7 +1,10 @@
 use cli::{package, scaffold::Scaffold};
 use error::DefaultResult;
 use serde_json;
-use std::{fs::File, path::Path};
+use std::{
+    fs::{self, File},
+    path::Path,
+};
 use util;
 
 pub struct RustScaffold {
@@ -16,7 +19,7 @@ impl RustScaffold {
                     "steps": {
                         "cargo": [ "build", "--release", "--target=wasm32-unknown-unknown" ]
                     },
-                    "artifact": "target/release/code.wasm"
+                    "artifact": "target/wasm32-unknown-unknown/release/code.wasm"
                 }
             ),
         }
@@ -29,6 +32,8 @@ impl Scaffold for RustScaffold {
             .as_ref()
             .to_path_buf()
             .join(package::CODE_DIR_NAME);
+
+        fs::create_dir_all(&code_dir)?;
 
         util::run_cmd(code_dir.clone(), "cargo".into(), vec!["init".to_owned()])?;
 

@@ -14,7 +14,7 @@ pub fn run_cmd(base_path: PathBuf, bin: String, args: Vec<String>) -> DefaultRes
 
     ensure!(
         status.success(),
-        "command {:?} was not successful",
+        "command {} was not successful",
         pretty_command
     );
 

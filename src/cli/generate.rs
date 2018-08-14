@@ -7,6 +7,7 @@ lazy_static! {
     pub static ref SCAFFOLD_REGEX: Regex = Regex::new(r"^(\S+):(\S+)$").unwrap();
 }
 
+#[derive(Debug)]
 struct CapScaffold {
     name: String,
     language: String,
@@ -32,8 +33,8 @@ pub fn generate(zome_name: PathBuf, capabilities: Vec<String>) -> DefaultResult<
             let matching = SCAFFOLD_REGEX.captures_iter(cap).next().unwrap();
 
             CapScaffold {
-                name: matching[0].to_owned(),
-                language: matching[1].to_owned(),
+                name: matching[1].to_owned(),
+                language: matching[2].to_owned(),
             }
         })
         .collect();
