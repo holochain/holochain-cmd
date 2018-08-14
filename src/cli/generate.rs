@@ -8,6 +8,7 @@ use std::{
     fs::{self, File},
     path::PathBuf,
 };
+use util;
 
 pub const ZOME_CONFIG_FILE_NAME: &str = "zome.json";
 
@@ -21,13 +22,7 @@ pub fn generate(zome_name: PathBuf, language: String) -> DefaultResult<()> {
         "argument \"zome_name\" doesn't point to a directory"
     );
 
-    let file_name = zome_name
-        .file_name()
-        .ok_or_else(|| format_err!("unable to retrieve file name"))?;
-
-    let file_name = file_name
-        .to_str()
-        .ok_or_else(|| format_err!("unable to retrieve file name"))?;
+    let file_name = util::file_name_string(zome_name.clone())?;
 
     let zome_config_json = json!{
         {

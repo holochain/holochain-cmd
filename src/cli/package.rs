@@ -8,6 +8,7 @@ use std::{
     io::{Read, Write},
     path::PathBuf,
 };
+use util;
 
 pub const CODE_DIR_NAME: &str = "code";
 
@@ -64,17 +65,11 @@ fn bundle_recurse(path: PathBuf, strip_meta: bool) -> DefaultResult<Object> {
 
     // Obtain the config file
     let mut main_tree: Object = if let Some(json_file_path) = maybe_json_file_path {
-        let file_name = json_file_path
-            .file_name()
-            .ok_or_else(|| format_err!("unable to retrieve file name"))?;
-
-        let file_name = file_name
-            .to_str()
-            .ok_or_else(|| format_err!("unable to retrieve file name"))?;
+        let file_name = util::file_name_string(json_file_path.clone())?;
 
         meta_section.insert(
             META_CONFIG_SECTION_NAME.into(),
-            Value::String(file_name.into()),
+            Value::String(file_name.clone()),
         );
 
         let json_file = fs::read_to_string(json_file_path)?;
@@ -88,22 +83,16 @@ fn bundle_recurse(path: PathBuf, strip_meta: bool) -> DefaultResult<Object> {
     let mut meta_tree = Object::new();
 
     for node in all_nodes {
-        let file_name = node
-            .file_name()
-            .ok_or_else(|| format_err!("unable to retrieve file name"))?;
-
-        let file_name = file_name
-            .to_str()
-            .ok_or_else(|| format_err!("unable to retrieve file name"))?;
+        let file_name = util::file_name_string(node.clone())?;
 
         if node.is_file() {
-            meta_tree.insert(file_name.into(), Value::String(META_FILE_ID.into()));
+            meta_tree.insert(file_name.clone(), Value::String(META_FILE_ID.into()));
 
             let mut buf = Vec::new();
             File::open(node)?.read_to_end(&mut buf)?;
             let encoded_content = base64::encode(&buf);
 
-            main_tree.insert(file_name.into(), Value::String(encoded_content));
+            main_tree.insert(file_name.clone(), Value::String(encoded_content));
         } else if node.is_dir() {
             if let Some(build_config) = node
                 .read_dir()?
@@ -111,19 +100,19 @@ fn bundle_recurse(path: PathBuf, strip_meta: bool) -> DefaultResult<Object> {
                 .map(|e| e.unwrap().path())
                 .find(|path| path.ends_with(BUILD_CONFIG_FILE_NAME))
             {
-                meta_tree.insert(file_name.into(), Value::String(META_BIN_ID.into()));
+                meta_tree.insert(file_name.clone(), Value::String(META_BIN_ID.into()));
 
                 let build = Build::from_file(build_config)?;
 
                 let wasm = build.run(&node)?;
 
-                main_tree.insert(file_name.into(), Value::String(wasm));
+                main_tree.insert(file_name.clone(), Value::String(wasm));
             } else {
-                meta_tree.insert(file_name.into(), Value::String(META_DIR_ID.into()));
+                meta_tree.insert(file_name.clone(), Value::String(META_DIR_ID.into()));
 
                 let sub_tree_content = bundle_recurse(node.clone(), strip_meta)?;
 
-                main_tree.insert(file_name.into(), Value::Object(sub_tree_content));
+                main_tree.insert(file_name.clone(), Value::Object(sub_tree_content));
             }
         }
     }

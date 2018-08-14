@@ -20,3 +20,14 @@ pub fn run_cmd(base_path: PathBuf, bin: String, args: Vec<String>) -> DefaultRes
 
     Ok(())
 }
+
+/// Helper method for obtaining the file name of a path as a String
+pub fn file_name_string(path: PathBuf) -> DefaultResult<String> {
+    let file_name = path
+        .file_name()
+        .ok_or_else(|| format_err!("unable to retrieve file name"))?
+        .to_str()
+        .ok_or_else(|| format_err!("unable to retrieve file name"))?;
+
+    Ok(file_name.into())
+}
