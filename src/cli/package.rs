@@ -8,6 +8,8 @@ use std::{
     path::PathBuf,
 };
 
+pub const CODE_DIR_NAME: &str = "code";
+
 pub const BUILD_CONFIG_FILE_NAME: &str = ".build";
 
 pub const WASM_FILE_EXTENSION: &str = "wasm";

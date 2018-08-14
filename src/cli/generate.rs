@@ -40,7 +40,10 @@ pub fn generate(zome_name: PathBuf, capabilities: Vec<String>) -> DefaultResult<
 
     for cap in caps {
         match cap.language.as_str() {
-            "rust" => scaffold(scaffold::rust::RustScaffold, zome_name.join(cap.name))?,
+            "rust" => scaffold(
+                scaffold::rust::RustScaffold::new(),
+                zome_name.join(cap.name),
+            )?,
             _ => bail!("unsupported language: {}", cap.language),
         }
     }

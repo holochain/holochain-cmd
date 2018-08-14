@@ -15,6 +15,7 @@ extern crate regex;
 #[macro_use]
 extern crate lazy_static;
 extern crate semver;
+#[macro_use]
 extern crate serde_json;
 extern crate tempfile;
 extern crate uuid;
