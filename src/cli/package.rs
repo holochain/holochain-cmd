@@ -327,4 +327,30 @@ mod tests {
         // Assert for equality
         assert!(!dir_diff::is_different(&source_path, &dest_path).unwrap());
     }
+
+    #[test]
+    fn auto_compilation() {
+        let tmp = gen_dir();
+
+        Command::main_binary()
+            .unwrap()
+            .current_dir(&tmp.path())
+            .args(&["init", "."])
+            .assert()
+            .success();
+
+        Command::main_binary()
+            .unwrap()
+            .current_dir(&tmp.path())
+            .args(&["g", "zomes/bubblechat", "rust"])
+            .assert()
+            .success();
+
+        Command::main_binary()
+            .unwrap()
+            .current_dir(&tmp.path())
+            .args(&["package"])
+            .assert()
+            .success();
+    }
 }

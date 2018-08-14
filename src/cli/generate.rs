@@ -24,3 +24,38 @@ pub fn generate(zome_name: PathBuf, language: String) -> DefaultResult<()> {
 fn scaffold<S: Scaffold>(tooling: S, base_path: PathBuf) -> DefaultResult<()> {
     tooling.gen(base_path)
 }
+
+#[cfg(test)]
+mod tests {
+    use assert_cmd::prelude::*;
+    use std::process::Command;
+    use tempfile::{Builder, TempDir};
+
+    const HOLOCHAIN_TEST_PREFIX: &str = "org.holochain.test";
+
+    fn gen_dir() -> TempDir {
+        Builder::new()
+            .prefix(HOLOCHAIN_TEST_PREFIX)
+            .tempdir()
+            .unwrap()
+    }
+
+    #[test]
+    fn can_generate_rust_scaffold() {
+        let tmp = gen_dir();
+
+        Command::main_binary()
+            .unwrap()
+            .current_dir(&tmp.path())
+            .args(&["init", "."])
+            .assert()
+            .success();
+
+        Command::main_binary()
+            .unwrap()
+            .current_dir(&tmp.path())
+            .args(&["g", "zomes/bubblechat", "rust"])
+            .assert()
+            .success();
+    }
+}
