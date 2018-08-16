@@ -9,8 +9,10 @@ extern crate serde;
 extern crate serde_derive;
 extern crate assert_cmd;
 extern crate base64;
+extern crate colored;
 extern crate dir_diff;
 extern crate semver;
+#[macro_use]
 extern crate serde_json;
 extern crate tempfile;
 extern crate uuid;
@@ -18,6 +20,7 @@ extern crate uuid;
 mod cli;
 mod config_files;
 mod error;
+mod util;
 
 use error::{HolochainError, HolochainResult};
 use std::path::PathBuf;
@@ -55,7 +58,10 @@ enum Cli {
         #[structopt(long = "output", short = "o", parse(from_os_str))]
         output: Option<PathBuf>,
     },
-    #[structopt(name = "unpack")]
+    #[structopt(
+        name = "unpack",
+        about = "Unpacks a Holochain bundle into it's original file system structure"
+    )]
     Unpack {
         #[structopt(parse(from_os_str))]
         path: PathBuf,
@@ -82,13 +88,16 @@ enum Cli {
         about = "Generates a new zome and scaffolds the given capabilities"
     )]
     Generate {
-        #[structopt(help = "The name of the zome that will be generated")]
-        zome_name: String,
         #[structopt(
-            help = "A list of capabilities that will be scaffolded (e.g. blog:rust web_frontend:typescript)",
-            raw(required = "true")
+            help = "The path to the zome that should be generated (usually in ./zomes/)",
+            parse(from_os_str)
         )]
-        capabilities: Vec<String>,
+        zome: PathBuf,
+        #[structopt(
+            help = "The language of the generated zome",
+            default_value = "rust"
+        )]
+        language: String,
     },
 }
 
@@ -104,8 +113,8 @@ fn run() -> HolochainResult<()> {
     let args = Cli::from_args();
 
     match args {
-        Cli::Web { port } => cli::web(port).or_else(|err| Err(HolochainError::Cli(err)))?,
-        Cli::Agent => cli::agent().or_else(|err| Err(HolochainError::Cli(err)))?,
+        Cli::Web { port } => cli::web(port).or_else(|err| Err(HolochainError::Default(err)))?,
+        Cli::Agent => cli::agent().or_else(|err| Err(HolochainError::Default(err)))?,
         Cli::Package { strip_meta, output } => {
             cli::package(strip_meta, output).or_else(|err| Err(HolochainError::Default(err)))?
         }
@@ -115,7 +124,9 @@ fn run() -> HolochainResult<()> {
         Cli::Init { path, from } => {
             cli::new(path, from).or_else(|err| Err(HolochainError::Default(err)))?
         }
-        Cli::Generate { .. } => unimplemented!(),
+        Cli::Generate { zome, language } => {
+            cli::generate(zome, language).or_else(|err| Err(HolochainError::Default(err)))?
+        }
     }
 
     Ok(())
