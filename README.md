@@ -35,7 +35,7 @@ Run `hcdev help` for help.
 In your terminal, change directories to one where you wish to initialize a new Holochain app.
 Run the following, replacing `your_app_name` with your actual app name:
 ```shell
-$ hcdev generate your_app_name
+$ hcdev init your_app_name
 $ cd your_app_name
 ```
 
