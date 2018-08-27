@@ -30,125 +30,144 @@ pub const META_CONFIG_SECTION_NAME: &str = "config_file";
 
 pub type Object = Map<String, Value>;
 
+struct Packager {
+    strip_meta: bool,
+    preserve_dotfiles: bool,
+}
+
+impl Packager {
+    fn new(strip_meta: bool, preserve_dotfiles: bool) -> Packager {
+        Packager {
+            strip_meta,
+            preserve_dotfiles,
+        }
+    }
+
+    pub fn package(
+        strip_meta: bool,
+        preserve_dotfiles: bool,
+        output: Option<PathBuf>,
+    ) -> DefaultResult<()> {
+        let output = output.unwrap_or(PathBuf::from(DEFAULT_BUNDLE_FILE_NAME));
+
+        Packager::new(strip_meta, preserve_dotfiles).run(output)
+    }
+
+    fn run(&self, output: PathBuf) -> DefaultResult<()> {
+        let dir_obj_bundle = self.bundle_recurse(PathBuf::from("."))?;
+
+        let out_file = File::create(&output)?;
+
+        serde_json::to_writer_pretty(&out_file, &Value::Object(dir_obj_bundle))?;
+
+        println!("{} bundle file at {:?}", "Created".green().bold(), output);
+
+        Ok(())
+    }
+
+    fn bundle_recurse(&self, path: PathBuf) -> DefaultResult<Object> {
+        let root: Vec<_> = path
+            .read_dir()?
+            .filter(|e| e.is_ok())
+            .map(|e| e.unwrap().path())
+            .filter(|node| {
+                if self.preserve_dotfiles {
+                    return true;
+                }
+
+                util::file_name_string(node.to_path_buf())
+                    .and_then(|file_name| Ok(!file_name.starts_with(".")))
+                    .unwrap_or(false)
+            }).collect();
+
+        let maybe_json_file_path = root
+            .iter()
+            .filter(|e| e.is_file())
+            .find(|e| e.to_str().unwrap().ends_with(".json"));
+
+        // Scan files but discard found json file
+        let all_nodes = root.iter().filter(|node_path| {
+            maybe_json_file_path
+                .and_then(|path| Some(node_path != &path))
+                .unwrap_or(true)
+        });
+
+        let mut meta_section = Object::new();
+
+        // Obtain the config file
+        let mut main_tree: Object = if let Some(json_file_path) = maybe_json_file_path {
+            let file_name = util::file_name_string(json_file_path.clone())?;
+
+            meta_section.insert(
+                META_CONFIG_SECTION_NAME.into(),
+                Value::String(file_name.clone()),
+            );
+
+            let json_file = fs::read_to_string(json_file_path)?;
+
+            serde_json::from_str(&json_file)?
+        } else {
+            Object::new()
+        };
+
+        // Let's go meta. Way meta!
+        let mut meta_tree = Object::new();
+
+        for node in all_nodes {
+            let file_name = util::file_name_string(node.clone())?;
+
+            if node.is_file() {
+                meta_tree.insert(file_name.clone(), Value::String(META_FILE_ID.into()));
+
+                let mut buf = Vec::new();
+                File::open(node)?.read_to_end(&mut buf)?;
+                let encoded_content = base64::encode(&buf);
+
+                main_tree.insert(file_name.clone(), Value::String(encoded_content));
+            } else if node.is_dir() {
+                if let Some(build_config) = node
+                    .read_dir()?
+                    .filter(|e| e.is_ok())
+                    .map(|e| e.unwrap().path())
+                    .find(|path| path.ends_with(BUILD_CONFIG_FILE_NAME))
+                {
+                    meta_tree.insert(file_name.clone(), Value::String(META_BIN_ID.into()));
+
+                    let build = Build::from_file(build_config)?;
+
+                    let wasm = build.run(&node)?;
+
+                    main_tree.insert(file_name.clone(), Value::String(wasm));
+                } else {
+                    meta_tree.insert(file_name.clone(), Value::String(META_DIR_ID.into()));
+
+                    let sub_tree_content = self.bundle_recurse(node.clone())?;
+
+                    main_tree.insert(file_name.clone(), Value::Object(sub_tree_content));
+                }
+            }
+        }
+
+        if !self.strip_meta {
+            if meta_tree.len() > 0 {
+                meta_section.insert(META_TREE_SECTION_NAME.into(), Value::Object(meta_tree));
+            }
+
+            if meta_section.len() > 0 {
+                main_tree.insert(META_SECTION_NAME.into(), Value::Object(meta_section));
+            }
+        }
+
+        Ok(main_tree)
+    }
+}
+
 pub fn package(
     strip_meta: bool,
     preserve_dotfiles: bool,
     output: Option<PathBuf>,
 ) -> DefaultResult<()> {
-    let output = output.unwrap_or(PathBuf::from(DEFAULT_BUNDLE_FILE_NAME));
-
-    let dir_obj_bundle = bundle_recurse(PathBuf::from("."), strip_meta, preserve_dotfiles)?;
-
-    let out_file = File::create(&output)?;
-
-    serde_json::to_writer_pretty(&out_file, &Value::Object(dir_obj_bundle))?;
-
-    println!("{} bundle file at {:?}", "Created".green().bold(), output);
-
-    Ok(())
-}
-
-fn bundle_recurse(
-    path: PathBuf,
-    strip_meta: bool,
-    preserve_dotfiles: bool,
-) -> DefaultResult<Object> {
-    let root: Vec<_> = path
-        .read_dir()?
-        .filter(|e| e.is_ok())
-        .map(|e| e.unwrap().path())
-        .filter(|node| {
-            if preserve_dotfiles {
-                return true;
-            }
-
-            util::file_name_string(node.to_path_buf())
-                .and_then(|file_name| Ok(!file_name.starts_with(".")))
-                .unwrap_or(false)
-        }).collect();
-
-    let maybe_json_file_path = root
-        .iter()
-        .filter(|e| e.is_file())
-        .find(|e| e.to_str().unwrap().ends_with(".json"));
-
-    // Scan files but discard found json file
-    let all_nodes = root.iter().filter(|node_path| {
-        maybe_json_file_path
-            .and_then(|path| Some(node_path != &path))
-            .unwrap_or(true)
-    });
-
-    let mut meta_section = Object::new();
-
-    // Obtain the config file
-    let mut main_tree: Object = if let Some(json_file_path) = maybe_json_file_path {
-        let file_name = util::file_name_string(json_file_path.clone())?;
-
-        meta_section.insert(
-            META_CONFIG_SECTION_NAME.into(),
-            Value::String(file_name.clone()),
-        );
-
-        let json_file = fs::read_to_string(json_file_path)?;
-
-        serde_json::from_str(&json_file)?
-    } else {
-        Object::new()
-    };
-
-    // Let's go meta. Way meta!
-    let mut meta_tree = Object::new();
-
-    for node in all_nodes {
-        let file_name = util::file_name_string(node.clone())?;
-
-        if node.is_file() {
-            meta_tree.insert(file_name.clone(), Value::String(META_FILE_ID.into()));
-
-            let mut buf = Vec::new();
-            File::open(node)?.read_to_end(&mut buf)?;
-            let encoded_content = base64::encode(&buf);
-
-            main_tree.insert(file_name.clone(), Value::String(encoded_content));
-        } else if node.is_dir() {
-            // check if the directory contains a build file
-            if let Some(build_config) = node
-                .read_dir()?
-                .filter(|e| e.is_ok())
-                .map(|e| e.unwrap().path())
-                .find(|path| path.ends_with(BUILD_CONFIG_FILE_NAME))
-            {
-                meta_tree.insert(file_name.clone(), Value::String(META_BIN_ID.into()));
-
-                let build = Build::from_file(build_config)?;
-
-                // a build file exists so build the WASM
-                let wasm = build.run(&node)?;
-
-                // instead of recursing down the tree, add only the single built WASM value to the tree
-                main_tree.insert(file_name.clone(), Value::String(wasm));
-            } else {
-                meta_tree.insert(file_name.clone(), Value::String(META_DIR_ID.into()));
-
-                let sub_tree_content = bundle_recurse(node.clone(), strip_meta, preserve_dotfiles)?;
-
-                main_tree.insert(file_name.clone(), Value::Object(sub_tree_content));
-            }
-        }
-    }
-
-    if !strip_meta {
-        if meta_tree.len() > 0 {
-            meta_section.insert(META_TREE_SECTION_NAME.into(), Value::Object(meta_tree));
-        }
-
-        if meta_section.len() > 0 {
-            main_tree.insert(META_SECTION_NAME.into(), Value::Object(meta_section));
-        }
-    }
-
-    Ok(main_tree)
+    Packager::package(strip_meta, preserve_dotfiles, output)
 }
 
 pub fn unpack(path: PathBuf, to: PathBuf) -> DefaultResult<()> {
