@@ -9,7 +9,7 @@ use std::{
 };
 use util;
 
-#[derive(Clone, Deserialize)]
+#[derive(Clone, Deserialize, Serialize)]
 pub struct Build {
     pub steps: HashMap<String, Vec<String>>,
     pub artifact: PathBuf,
@@ -25,7 +25,19 @@ impl Build {
         Ok(build)
     }
 
+<<<<<<< HEAD
     /// Starts the build using the supplied build steps and returns the contents of the artifact, Base64 encoded
+=======
+    pub fn save_as<T: AsRef<Path>>(&self, path: T) -> DefaultResult<()> {
+        let file = File::create(path)?;
+
+        serde_json::to_writer_pretty(file, self)?;
+
+        Ok(())
+    }
+
+    /// Starts the build using the supplied build steps and returns the contents of the artifact
+>>>>>>> small refactor
     pub fn run(&self, base_path: &PathBuf) -> DefaultResult<String> {
         for (bin, args) in &self.steps {
             util::run_cmd(base_path.to_path_buf(), bin.to_string(), args.clone())?;
@@ -41,5 +53,28 @@ impl Build {
         } else {
             bail!("artifact path either doesn't point to a file or doesn't exist")
         }
+    }
+
+    pub fn with_artifact<P: Into<PathBuf>>(artifact: P) -> Build {
+        let path: PathBuf = artifact.into();
+
+        Build {
+            steps: HashMap::new(),
+            artifact: path,
+        }
+    }
+
+    pub fn cmd<S: Into<String> + Clone>(mut self, cmd: S, args: Vec<S>) -> Build {
+        let cmd: String = cmd.into();
+        let args: Vec<_> = args
+            .iter()
+            .map(|raw_arg| {
+                let arg: String = (*raw_arg).clone().into();
+
+                arg
+            }).collect();
+
+        self.steps.insert(cmd, args);
+        self
     }
 }
