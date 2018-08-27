@@ -26,7 +26,6 @@ pub fn generate(zome_name: PathBuf, language: String) -> DefaultResult<()> {
 
     let zome_config_json = json!{
         {
-            "name": "",
             "description": format!("The {} App", file_name)
         }
     };

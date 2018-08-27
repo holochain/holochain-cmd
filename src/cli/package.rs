@@ -30,10 +30,14 @@ pub const META_CONFIG_SECTION_NAME: &str = "config_file";
 
 pub type Object = Map<String, Value>;
 
-pub fn package(strip_meta: bool, output: Option<PathBuf>) -> DefaultResult<()> {
+pub fn package(
+    strip_meta: bool,
+    preserve_dotfiles: bool,
+    output: Option<PathBuf>,
+) -> DefaultResult<()> {
     let output = output.unwrap_or(PathBuf::from(DEFAULT_BUNDLE_FILE_NAME));
 
-    let dir_obj_bundle = bundle_recurse(PathBuf::from("."), strip_meta)?;
+    let dir_obj_bundle = bundle_recurse(PathBuf::from("."), strip_meta, preserve_dotfiles)?;
 
     let out_file = File::create(&output)?;
 
@@ -44,12 +48,24 @@ pub fn package(strip_meta: bool, output: Option<PathBuf>) -> DefaultResult<()> {
     Ok(())
 }
 
-fn bundle_recurse(path: PathBuf, strip_meta: bool) -> DefaultResult<Object> {
+fn bundle_recurse(
+    path: PathBuf,
+    strip_meta: bool,
+    preserve_dotfiles: bool,
+) -> DefaultResult<Object> {
     let root: Vec<_> = path
         .read_dir()?
         .filter(|e| e.is_ok())
         .map(|e| e.unwrap().path())
-        .collect();
+        .filter(|node| {
+            if preserve_dotfiles {
+                return true;
+            }
+
+            util::file_name_string(node.to_path_buf())
+                .and_then(|file_name| Ok(!file_name.starts_with(".")))
+                .unwrap_or(false)
+        }).collect();
 
     let maybe_json_file_path = root
         .iter()
@@ -115,7 +131,7 @@ fn bundle_recurse(path: PathBuf, strip_meta: bool) -> DefaultResult<Object> {
             } else {
                 meta_tree.insert(file_name.clone(), Value::String(META_DIR_ID.into()));
 
-                let sub_tree_content = bundle_recurse(node.clone(), strip_meta)?;
+                let sub_tree_content = bundle_recurse(node.clone(), strip_meta, preserve_dotfiles)?;
 
                 main_tree.insert(file_name.clone(), Value::Object(sub_tree_content));
             }
@@ -260,8 +276,7 @@ mod tests {
                     "unpack",
                     DEFAULT_BUNDLE_FILE_NAME,
                     temp_dir_path.to_str().unwrap(),
-                ])
-                .assert()
+                ]).assert()
                 .success();
         }
 
@@ -315,8 +330,7 @@ mod tests {
                 "unpack",
                 bundle_file_path.to_str().unwrap(),
                 dest_path.to_str().unwrap(),
-            ])
-            .assert()
+            ]).assert()
             .success();
 
         // Assert for equality
