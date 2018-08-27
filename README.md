@@ -108,7 +108,7 @@ When using `hcdev generate` to scaffold a Zome, you will have a `.build` file au
 }
 ```
 
-The two top level properties are `steps` and `artifact`. `steps` is a list of commands which will be sequentially executed to build a WASM file. `artifact` is the expected path to the built WASM file. Under `steps`, each key refers to the bin of the command that will be executed, such as `cargo`. The value of `cargo`, the command, is an array of arguments: `build`, and the the two `--` flags. In order to determine what should go here, just try running the commands yourself from a terminal, while in the directory of the Zome code.
+The two top level properties are `steps` and `artifact`. `steps` is a list of commands which will be sequentially executed to build a WASM file. `artifact` is the expected path to the built WASM file. Under `steps`, each key refers to the bin of the command that will be executed, such as `cargo`. The value of `cargo`, the command, is an array of arguments: `build`, and the two `--` flags. In order to determine what should go here, just try running the commands yourself from a terminal, while in the directory of the Zome code.
 
 
 ### Rust -> WASM compilation tools
