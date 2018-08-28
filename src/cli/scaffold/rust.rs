@@ -46,7 +46,7 @@ impl Scaffold for RustScaffold {
 
         // @TODO switch to crates.io ref when hdk-rust gets published
         // @see https://github.com/holochain/holochain-cmd/issues/19
-        let hdk_dep: &str = "hdk = { git = \"https://github.com/holochain/hdk-rust\", branch = \"develop\" }";
+        let hdk_dep: &str = "hdk = { git = \"https://github.com/holochain/hdk-rust\" }";
 
         f.write_all(hdk_dep.as_bytes())?;
 
