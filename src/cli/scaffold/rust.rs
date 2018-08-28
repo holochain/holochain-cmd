@@ -23,7 +23,7 @@ impl RustScaffold {
             build_template: Build::with_artifact("target/wasm32-unknown-unknown/release/code.wasm")
                 .cmd(
                     "cargo",
-                    vec!["build", "--release", "--target=wasm32-unknown-unknown"],
+                    vec!["build", "--release", "--target", "wasm32-unknown-unknown"],
                 ),
         }
     }
