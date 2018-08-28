@@ -30,11 +30,11 @@ impl Scaffold for RustScaffold {
     fn gen<P: AsRef<Path>>(&self, base_path: P) -> DefaultResult<()> {
         fs::create_dir_all(&base_path)?;
 
-        // use cargo to initialise a library Rust app without any version control
+        // use cargo to initialise a Rust app without any version control
         util::run_cmd(
             base_path.as_ref().to_path_buf(),
             "cargo".into(),
-            vec!["init".to_owned(), "--lib".to_owned(), "--vcs".to_owned(), "none".to_owned()],
+            vec!["init".to_owned(), "--vcs".to_owned(), "none".to_owned()],
         )?;
 
         // create and fill in a build file appropriate for Rust
