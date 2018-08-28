@@ -137,7 +137,7 @@ impl Packager {
 
                     let wasm = build.run(&node)?;
 
-                    main_tree.insert(file_name.clone(), Value::String(wasm));
+                    main_tree.insert(file_name.clone(), json!({ "code": wasm }));
                 } else {
                     meta_tree.insert(file_name.clone(), Value::String(META_DIR_ID.into()));
 
@@ -198,15 +198,20 @@ fn unpack_recurse(mut obj: Object, to: PathBuf) -> DefaultResult<()> {
 
                 if let Value::String(node_type) = meta_value {
                     match node_type.as_str() {
-                        id @ META_FILE_ID | id @ META_BIN_ID if entry.is_string() => {
+                        META_FILE_ID if entry.is_string() => {
                             let base64_content = entry.as_str().unwrap().to_string();
                             let content = base64::decode(&base64_content)?;
 
                             let mut file_path = to.join(meta_entry);
 
-                            if id == META_BIN_ID {
-                                file_path.set_extension(WASM_FILE_EXTENSION);
-                            }
+                            File::create(file_path)?.write_all(&content[..])?;
+                        }
+                        META_BIN_ID if entry.is_object() => {
+                            let base64_content = entry[&meta_entry].to_string();
+                            let content = base64::decode(&base64_content)?;
+
+                            let mut file_path =
+                                to.join(meta_entry).with_extension(WASM_FILE_EXTENSION);
 
                             File::create(file_path)?.write_all(&content[..])?;
                         }
