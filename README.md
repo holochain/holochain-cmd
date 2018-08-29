@@ -89,10 +89,9 @@ The `hcdev package` tool will automate the process of compiling your Zome code, 
 ### .build files
 In the process of building a `.hcpkg` file, here is what Holochain does.
 - It iterates Zome by Zome adding them to the JSON
-- For each Zome, it looks for a `code` folder
-- Within that code folder, it looks for a `.build` file
-- It executes one or more commands from the `.build` file to create a WASM file
-- It takes that built WASM file and Base64 encodes it, then stores that value under the JSON key `code` for the Zome
+- For each Zome, it looks for any folders containing a `.build` file
+- For any folder with a `.build` file, it executes one or more commands from the `.build` file to create a WASM file
+- It takes that built WASM file and Base64 encodes it, then stores a key/value pair for the Zome with the key as the folder name and the encoded WASM as the value
 
 When using `hcdev generate` to scaffold a Zome, you will have a `.build` file automatically. If you create your Zome manually however, you will need to create the file yourself. Here's the structure of a `.build` file, using a Rust Zome which builds using Cargo as an example:
 ```json
