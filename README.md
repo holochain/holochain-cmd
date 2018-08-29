@@ -27,7 +27,7 @@ Run `hcdev help` for help.
 | generate  | Generates a new zome and scaffolds the given capabilities           |
 | init      | Initializes a new Holochain app at the given directory              |
 | package   | Builds the current Holochain app into a `.hcpkg` file               |
-| unpack    | Unpacks a Holochain bundle into it's original file system structure |
+| unpack    | Unpacks a Holochain bundle into its original file system structure |
 | web (u)   | Starts a web server for the current Holochain app                   |
 
 ## How To Get Started Building An App
@@ -67,7 +67,7 @@ In order for Holochain to run your app, you have to build your code into a singl
 A Holochain app can be fully contained in a file known as a `.hcpkg` file.
 It is a JSON file, with a particular structure that Holochain can understand, and execute.
 
-This is an unusual JSON file, it is part configuration, and part executable.
+This is an unusual JSON file; it is part configuration, and part executable.
 
 The configuration part comes from the `json` files that are throughout your app. One at the top level for the application (`app.json`) and one for each Zome. Ultimately, these get stitched together into a single tree structure in the `.hcpkg` file.
 
