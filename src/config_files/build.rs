@@ -16,6 +16,7 @@ pub struct Build {
 }
 
 impl Build {
+    /// Creates a Build struct from a .build JSON file and returns it
     pub fn from_file<T: AsRef<Path>>(path: T) -> DefaultResult<Build> {
         let file = File::open(path)?;
 
@@ -24,7 +25,7 @@ impl Build {
         Ok(build)
     }
 
-    /// Starts the build using the supplied build steps and returns the contents of the artifact
+    /// Starts the build using the supplied build steps and returns the contents of the artifact, Base64 encoded
     pub fn run(&self, base_path: &PathBuf) -> DefaultResult<String> {
         for (bin, args) in &self.steps {
             util::run_cmd(base_path.to_path_buf(), bin.to_string(), args.clone())?;

@@ -94,6 +94,7 @@ fn bundle_recurse(path: PathBuf, strip_meta: bool) -> DefaultResult<Object> {
 
             main_tree.insert(file_name.clone(), Value::String(encoded_content));
         } else if node.is_dir() {
+            // check if the directory contains a build file
             if let Some(build_config) = node
                 .read_dir()?
                 .filter(|e| e.is_ok())
@@ -104,8 +105,10 @@ fn bundle_recurse(path: PathBuf, strip_meta: bool) -> DefaultResult<Object> {
 
                 let build = Build::from_file(build_config)?;
 
+                // a build file exists so build the WASM
                 let wasm = build.run(&node)?;
 
+                // instead of recursing down the tree, add only the single built WASM value to the tree
                 main_tree.insert(file_name.clone(), Value::String(wasm));
             } else {
                 meta_tree.insert(file_name.clone(), Value::String(META_DIR_ID.into()));
