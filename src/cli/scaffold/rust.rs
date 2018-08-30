@@ -31,6 +31,7 @@ impl Scaffold for RustScaffold {
     fn gen<P: AsRef<Path>>(&self, base_path: P) -> DefaultResult<()> {
         fs::create_dir_all(&base_path)?;
 
+        // use cargo to initialise a Rust app without any version control
         util::run_cmd(
             base_path.as_ref().to_path_buf(),
             "cargo".into(),
@@ -52,7 +53,7 @@ impl Scaffold for RustScaffold {
 
         f.write_all(hdk_dep.as_bytes())?;
 
-        // add build file
+        // create and fill in a build file appropriate for Rust
         let build_file_path = base_path.as_ref().join(package::BUILD_CONFIG_FILE_NAME);
 
         let file = File::create(build_file_path)?;
