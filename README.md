@@ -62,6 +62,18 @@ So in a given Zome we have two things:
 
 In order for Holochain to run your app, you have to build your code into a single packaged file. Those instructions follow.
 
+## Ignoring files
+
+Sometimes, you'll want to exclude files in your project directory to get a straight .hcpkg file that can be understood by Holochain. In oder to do that, just create a `.hcdevignore` file. It has a simmilar structure to `.gitignore` files:
+
+```
+README.md
+dist
+.DS_Store
+```
+
+The `package` command includes patterns inside `.gitignore` files automatically, so you don't have to write everything twice. Also *hidden* files are ignored by default as well.
+
 ## What are .hcpkg files?
 
 A Holochain app can be fully contained in a file known as a `.hcpkg` file.
@@ -76,15 +88,15 @@ Rather than storing the code in its ugly raw WASM bytecode format, Holochain exp
 
 If you haven't heard of WebAssembly (WASM for short), that's ok. Important to know is that WASM is intended as a "compilation target" for other languages, not a language to write code in. So instead of writing code in WASM, write code in a language that's familiar to you, and [supports WASM](https://github.com/appcypher/awesome-wasm-langs). When it's time to run your code in Holochain, compile it.
 
-In order to avoid having to handcraft this complex JSON structure, with lots of room for error, the `hcdev package` command streamlines the process of taking your "raw" application folder, and packaging it up into the final `.hcpkg` file. 
+In order to avoid having to handcraft this complex JSON structure, with lots of room for error, the `hcdev package` command streamlines the process of taking your "raw" application folder, and packaging it up into the final `.hcpkg` file.
 
 More information about this follows.
 
 ## Using Built-in Compilation
 
-The `hcdev package` tool will automate the process of compiling your Zome code, encoding it, and inserting into the `.hcpkg` file. In order to get these benefits, you just need to make sure that you have the right compilation tools installed on the machine you are using the command line tools from, and that you have the proper configuration files in your Zome folders. 
+The `hcdev package` tool will automate the process of compiling your Zome code, encoding it, and inserting into the `.hcpkg` file. In order to get these benefits, you just need to make sure that you have the right compilation tools installed on the machine you are using the command line tools from, and that you have the proper configuration files in your Zome folders.
 
-`hcdev package` works with special files called `.build` files. 
+`hcdev package` works with special files called `.build` files.
 
 ### .build files
 In the process of building a `.hcpkg` file, here is what Holochain does.
@@ -121,5 +133,3 @@ $ rustup default nightly # switch to the nightly rust toolchain as your default
 Once that's done, you should be able to run commands like `cargo build --target=wasm32-unknown-unknown` and have it work.
 
 Once all of this is set up, you can build and run your `.hcpkg` file with Holochain!
-
-
