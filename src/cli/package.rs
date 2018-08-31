@@ -2,6 +2,7 @@ use base64;
 use colored::*;
 use config_files::Build;
 use error::DefaultResult;
+use ignore::WalkBuilder;
 use serde_json::{self, Map, Value};
 use std::{
     fs::{self, File},
@@ -33,25 +34,17 @@ pub type Object = Map<String, Value>;
 
 struct Packager {
     strip_meta: bool,
-    preserve_dotfiles: bool,
 }
 
 impl Packager {
-    fn new(strip_meta: bool, preserve_dotfiles: bool) -> Packager {
-        Packager {
-            strip_meta,
-            preserve_dotfiles,
-        }
+    fn new(strip_meta: bool) -> Packager {
+        Packager { strip_meta }
     }
 
-    pub fn package(
-        strip_meta: bool,
-        preserve_dotfiles: bool,
-        output: Option<PathBuf>,
-    ) -> DefaultResult<()> {
+    pub fn package(strip_meta: bool, output: Option<PathBuf>) -> DefaultResult<()> {
         let output = output.unwrap_or_else(|| PathBuf::from(DEFAULT_BUNDLE_FILE_NAME));
 
-        Packager::new(strip_meta, preserve_dotfiles).run(&output)
+        Packager::new(strip_meta).run(&output)
     }
 
     fn run(&self, output: &PathBuf) -> DefaultResult<()> {
@@ -67,11 +60,18 @@ impl Packager {
     }
 
     fn bundle_recurse(&self, path: &PathBuf) -> DefaultResult<Object> {
-        let root: Vec<_> = path
-            .read_dir()?
+        let root_dir = WalkBuilder::new(path)
+            .max_depth(Some(1))
+            .add_custom_ignore_filename(IGNORE_FILE_NAME)
+            .build()
+            .skip(1);
+
+        let root: Vec<_> = root_dir
             .filter(|e| e.is_ok())
-            .map(|e| e.unwrap().path())
+            .map(|e| e.unwrap().path().to_path_buf())
             .collect();
+
+        println!("ROOT! {:?}", root);
 
         let maybe_json_file_path = root
             .iter()
@@ -128,7 +128,7 @@ impl Packager {
 
                     let build = Build::from_file(build_config)?;
 
-                    let wasm = build.run(&node)?;
+                    let wasm = build.run(node)?;
 
                     main_tree.insert(file_name.clone(), json!({ "code": wasm }));
                 } else {
@@ -155,12 +155,8 @@ impl Packager {
     }
 }
 
-pub fn package(
-    strip_meta: bool,
-    preserve_dotfiles: bool,
-    output: Option<PathBuf>,
-) -> DefaultResult<()> {
-    Packager::package(strip_meta, preserve_dotfiles, output)
+pub fn package(strip_meta: bool, output: Option<PathBuf>) -> DefaultResult<()> {
+    Packager::package(strip_meta, output)
 }
 
 pub fn unpack(path: &PathBuf, to: &PathBuf) -> DefaultResult<()> {

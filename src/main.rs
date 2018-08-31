@@ -1,6 +1,5 @@
 extern crate holochain_core;
 extern crate holochain_dna;
-#[macro_use]
 extern crate structopt;
 #[macro_use]
 extern crate failure;
@@ -14,6 +13,7 @@ extern crate dir_diff;
 extern crate semver;
 #[macro_use]
 extern crate serde_json;
+extern crate ignore;
 extern crate tempfile;
 extern crate uuid;
 
@@ -55,11 +55,6 @@ enum Cli {
             help = "Strips all __META__ sections off the target bundle. Makes unpacking of the bundle impossible"
         )]
         strip_meta: bool,
-        #[structopt(
-            long = "preserve-dotfiles",
-            help = "Keeps the tool from ignoring dotfiles in the file system tree"
-        )]
-        preserve_dotfiles: bool,
         #[structopt(long = "output", short = "o", parse(from_os_str))]
         output: Option<PathBuf>,
     },
@@ -120,12 +115,9 @@ fn run() -> HolochainResult<()> {
     match args {
         Cli::Web { port } => cli::web(port).or_else(|err| Err(HolochainError::Default(err)))?,
         Cli::Agent => cli::agent().or_else(|err| Err(HolochainError::Default(err)))?,
-        Cli::Package {
-            strip_meta,
-            preserve_dotfiles,
-            output,
-        } => cli::package(strip_meta, preserve_dotfiles, output)
-            .or_else(|err| Err(HolochainError::Default(err)))?,
+        Cli::Package { strip_meta, output } => {
+            cli::package(strip_meta, output).or_else(|err| Err(HolochainError::Default(err)))?
+        }
         Cli::Unpack { path, to } => {
             cli::unpack(&path, &to).or_else(|err| Err(HolochainError::Default(err)))?
         }
