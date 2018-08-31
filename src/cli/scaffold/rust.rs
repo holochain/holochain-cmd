@@ -58,7 +58,7 @@ impl Scaffold for RustScaffold {
         cargo_file.write_all(hdk_dep.as_bytes())?;
 
         // add WASM friendly lib configuration properties
-        let lib_config: &str = "\n\n[lib]\npath = \"src/lib.rs\"\ncrate-type = [\"cdylib\"]";
+        let lib_config: &str = "\n\n[lib]\npath = \"src/lib.rs\"\ncrate-type = [\"cdylib\"]\n";
 
         cargo_file.write_all(lib_config.as_bytes())?;
 
