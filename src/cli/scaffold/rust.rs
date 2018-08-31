@@ -1,16 +1,11 @@
 use cli::{package, scaffold::Scaffold};
 use config_files::Build;
 use error::DefaultResult;
-<<<<<<< HEAD
-use serde_json;
 use std::{
-    fs::{self, File, OpenOptions},
+    fs::{self, OpenOptions},
     io::Write,
     path::Path,
 };
-=======
-use std::{fs, path::Path};
->>>>>>> small refactor
 use util;
 
 pub struct RustScaffold {
@@ -23,7 +18,7 @@ impl RustScaffold {
             build_template: Build::with_artifact("target/wasm32-unknown-unknown/release/code.wasm")
                 .cmd(
                     "cargo",
-                    &["build", "--release", "--target", "wasm32-unknown-unknown"],
+                    &["build", "--release", "--target=wasm32-unknown-unknown"],
                 ),
         }
     }
@@ -67,13 +62,7 @@ impl Scaffold for RustScaffold {
         // create and fill in a build file appropriate for Rust
         let build_file_path = base_path.as_ref().join(package::BUILD_CONFIG_FILE_NAME);
 
-<<<<<<< HEAD
-        let build_file = File::create(build_file_path)?;
-
-        serde_json::to_writer_pretty(build_file, &self.build_template)?;
-=======
         self.build_template.save_as(build_file_path)?;
->>>>>>> small refactor
 
         Ok(())
     }

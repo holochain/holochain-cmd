@@ -25,9 +25,6 @@ impl Build {
         Ok(build)
     }
 
-<<<<<<< HEAD
-    /// Starts the build using the supplied build steps and returns the contents of the artifact, Base64 encoded
-=======
     pub fn save_as<T: AsRef<Path>>(&self, path: T) -> DefaultResult<()> {
         let file = File::create(path)?;
 
@@ -37,7 +34,6 @@ impl Build {
     }
 
     /// Starts the build using the supplied build steps and returns the contents of the artifact
->>>>>>> small refactor
     pub fn run(&self, base_path: &PathBuf) -> DefaultResult<String> {
         for (bin, args) in &self.steps {
             util::run_cmd(base_path.to_path_buf(), bin.to_string(), args.clone())?;
