@@ -127,13 +127,13 @@ fn run() -> HolochainResult<()> {
         } => cli::package(strip_meta, preserve_dotfiles, output)
             .or_else(|err| Err(HolochainError::Default(err)))?,
         Cli::Unpack { path, to } => {
-            cli::unpack(path, to).or_else(|err| Err(HolochainError::Default(err)))?
+            cli::unpack(&path, &to).or_else(|err| Err(HolochainError::Default(err)))?
         }
         Cli::Init { path, from } => {
-            cli::new(path, from).or_else(|err| Err(HolochainError::Default(err)))?
+            cli::new(&path, &from).or_else(|err| Err(HolochainError::Default(err)))?
         }
         Cli::Generate { zome, language } => {
-            cli::generate(zome, language).or_else(|err| Err(HolochainError::Default(err)))?
+            cli::generate(&zome, &language).or_else(|err| Err(HolochainError::Default(err)))?
         }
     }
 

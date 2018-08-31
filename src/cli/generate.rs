@@ -12,7 +12,7 @@ use util;
 
 pub const ZOME_CONFIG_FILE_NAME: &str = "zome.json";
 
-pub fn generate(zome_name: PathBuf, language: String) -> DefaultResult<()> {
+pub fn generate(zome_name: &PathBuf, language: &str) -> DefaultResult<()> {
     if !zome_name.exists() {
         fs::create_dir_all(&zome_name)?;
     }
@@ -22,7 +22,7 @@ pub fn generate(zome_name: PathBuf, language: String) -> DefaultResult<()> {
         "argument \"zome_name\" doesn't point to a directory"
     );
 
-    let file_name = util::file_name_string(zome_name.clone())?;
+    let file_name = util::file_name_string(&zome_name)?;
 
     let zome_config_json = json!{
         {
@@ -37,15 +37,15 @@ pub fn generate(zome_name: PathBuf, language: String) -> DefaultResult<()> {
     fs::create_dir_all(&code_dir)?;
 
     // match against all supported languages
-    match language.as_str() {
-        "rust" => scaffold(scaffold::rust::RustScaffold::new(), code_dir)?,
+    match language {
+        "rust" => scaffold(&scaffold::rust::RustScaffold::new(), code_dir)?,
         _ => bail!("unsupported language: {}", language),
     }
 
     Ok(())
 }
 
-fn scaffold<S: Scaffold>(tooling: S, base_path: PathBuf) -> DefaultResult<()> {
+fn scaffold<S: Scaffold>(tooling: &S, base_path: PathBuf) -> DefaultResult<()> {
     tooling.gen(base_path)
 }
 

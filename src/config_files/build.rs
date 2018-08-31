@@ -64,7 +64,7 @@ impl Build {
         }
     }
 
-    pub fn cmd<S: Into<String> + Clone>(mut self, cmd: S, args: Vec<S>) -> Build {
+    pub fn cmd<S: Into<String> + Clone>(mut self, cmd: S, args: &[S]) -> Build {
         let cmd: String = cmd.into();
         let args: Vec<_> = args
             .iter()

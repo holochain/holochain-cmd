@@ -7,7 +7,7 @@ use std::{
     path::PathBuf,
 };
 
-pub fn new(path: PathBuf, _from: Option<String>) -> DefaultResult<()> {
+pub fn new(path: &PathBuf, _from: &Option<String>) -> DefaultResult<()> {
     if !path.exists() {
         fs::create_dir_all(&path)?;
     } else {

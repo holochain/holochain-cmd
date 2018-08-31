@@ -13,6 +13,7 @@ use util;
 pub const CODE_DIR_NAME: &str = "code";
 
 pub const BUILD_CONFIG_FILE_NAME: &str = ".build";
+pub const IGNORE_FILE_NAME: &str = ".hcdevignore";
 
 pub const CARGO_FILE_NAME: &str = "Cargo.toml";
 
@@ -48,37 +49,29 @@ impl Packager {
         preserve_dotfiles: bool,
         output: Option<PathBuf>,
     ) -> DefaultResult<()> {
-        let output = output.unwrap_or(PathBuf::from(DEFAULT_BUNDLE_FILE_NAME));
+        let output = output.unwrap_or_else(|| PathBuf::from(DEFAULT_BUNDLE_FILE_NAME));
 
-        Packager::new(strip_meta, preserve_dotfiles).run(output)
+        Packager::new(strip_meta, preserve_dotfiles).run(&output)
     }
 
-    fn run(&self, output: PathBuf) -> DefaultResult<()> {
-        let dir_obj_bundle = self.bundle_recurse(PathBuf::from("."))?;
+    fn run(&self, output: &PathBuf) -> DefaultResult<()> {
+        let dir_obj_bundle = self.bundle_recurse(&PathBuf::from("."))?;
 
         let out_file = File::create(&output)?;
 
-        serde_json::to_writer_pretty(&out_file, &Value::Object(dir_obj_bundle))?;
+        serde_json::to_writer_pretty(&out_file, &Value::from(dir_obj_bundle))?;
 
         println!("{} bundle file at {:?}", "Created".green().bold(), output);
 
         Ok(())
     }
 
-    fn bundle_recurse(&self, path: PathBuf) -> DefaultResult<Object> {
+    fn bundle_recurse(&self, path: &PathBuf) -> DefaultResult<Object> {
         let root: Vec<_> = path
             .read_dir()?
             .filter(|e| e.is_ok())
             .map(|e| e.unwrap().path())
-            .filter(|node| {
-                if self.preserve_dotfiles {
-                    return true;
-                }
-
-                util::file_name_string(node.to_path_buf())
-                    .and_then(|file_name| Ok(!file_name.starts_with(".")))
-                    .unwrap_or(false)
-            }).collect();
+            .collect();
 
         let maybe_json_file_path = root
             .iter()
@@ -96,7 +89,7 @@ impl Packager {
 
         // Obtain the config file
         let mut main_tree: Object = if let Some(json_file_path) = maybe_json_file_path {
-            let file_name = util::file_name_string(json_file_path.clone())?;
+            let file_name = util::file_name_string(&json_file_path)?;
 
             meta_section.insert(
                 META_CONFIG_SECTION_NAME.into(),
@@ -114,16 +107,16 @@ impl Packager {
         let mut meta_tree = Object::new();
 
         for node in all_nodes {
-            let file_name = util::file_name_string(node.clone())?;
+            let file_name = util::file_name_string(&node)?;
 
             if node.is_file() {
-                meta_tree.insert(file_name.clone(), Value::String(META_FILE_ID.into()));
+                meta_tree.insert(file_name.clone(), META_FILE_ID.into());
 
                 let mut buf = Vec::new();
                 File::open(node)?.read_to_end(&mut buf)?;
                 let encoded_content = base64::encode(&buf);
 
-                main_tree.insert(file_name.clone(), Value::String(encoded_content));
+                main_tree.insert(file_name.clone(), encoded_content.into());
             } else if node.is_dir() {
                 if let Some(build_config) = node
                     .read_dir()?
@@ -131,7 +124,7 @@ impl Packager {
                     .map(|e| e.unwrap().path())
                     .find(|path| path.ends_with(BUILD_CONFIG_FILE_NAME))
                 {
-                    meta_tree.insert(file_name.clone(), Value::String(META_BIN_ID.into()));
+                    meta_tree.insert(file_name.clone(), META_BIN_ID.into());
 
                     let build = Build::from_file(build_config)?;
 
@@ -139,22 +132,22 @@ impl Packager {
 
                     main_tree.insert(file_name.clone(), json!({ "code": wasm }));
                 } else {
-                    meta_tree.insert(file_name.clone(), Value::String(META_DIR_ID.into()));
+                    meta_tree.insert(file_name.clone(), META_DIR_ID.into());
 
-                    let sub_tree_content = self.bundle_recurse(node.clone())?;
+                    let sub_tree_content = self.bundle_recurse(&node)?;
 
-                    main_tree.insert(file_name.clone(), Value::Object(sub_tree_content));
+                    main_tree.insert(file_name.clone(), sub_tree_content.into());
                 }
             }
         }
 
         if !self.strip_meta {
-            if meta_tree.len() > 0 {
-                meta_section.insert(META_TREE_SECTION_NAME.into(), Value::Object(meta_tree));
+            if !meta_tree.is_empty() {
+                meta_section.insert(META_TREE_SECTION_NAME.into(), meta_tree.into());
             }
 
-            if meta_section.len() > 0 {
-                main_tree.insert(META_SECTION_NAME.into(), Value::Object(meta_section));
+            if !meta_section.is_empty() {
+                main_tree.insert(META_SECTION_NAME.into(), meta_section.into());
             }
         }
 
@@ -170,7 +163,7 @@ pub fn package(
     Packager::package(strip_meta, preserve_dotfiles, output)
 }
 
-pub fn unpack(path: PathBuf, to: PathBuf) -> DefaultResult<()> {
+pub fn unpack(path: &PathBuf, to: &PathBuf) -> DefaultResult<()> {
     ensure!(path.is_file(), "argument \"path\" doesn't point ot a file");
 
     if !to.exists() {
@@ -182,12 +175,12 @@ pub fn unpack(path: PathBuf, to: PathBuf) -> DefaultResult<()> {
     let raw_bundle_content = fs::read_to_string(&path)?;
     let bundle_content: Object = serde_json::from_str(&raw_bundle_content)?;
 
-    unpack_recurse(bundle_content, to)?;
+    unpack_recurse(bundle_content, &to)?;
 
     Ok(())
 }
 
-fn unpack_recurse(mut obj: Object, to: PathBuf) -> DefaultResult<()> {
+fn unpack_recurse(mut obj: Object, to: &PathBuf) -> DefaultResult<()> {
     if let Some(Value::Object(mut main_meta_obj)) = obj.remove(META_SECTION_NAME) {
         // unpack the tree
         if let Some(Value::Object(tree_meta_obj)) = main_meta_obj.remove(META_TREE_SECTION_NAME) {
@@ -219,9 +212,9 @@ fn unpack_recurse(mut obj: Object, to: PathBuf) -> DefaultResult<()> {
                             let directory_obj = entry.as_object().unwrap();
                             let dir_path = to.join(meta_entry);
 
-                            fs::create_dir(dir_path.clone())?;
+                            fs::create_dir(&dir_path)?;
 
-                            unpack_recurse(directory_obj.clone(), dir_path.clone())?;
+                            unpack_recurse(directory_obj.clone(), &dir_path)?;
                         }
                         _ => bail!("incompatible meta section"),
                     }
@@ -238,7 +231,7 @@ fn unpack_recurse(mut obj: Object, to: PathBuf) -> DefaultResult<()> {
                 "config file has to be a string"
             );
 
-            if obj.len() > 0 {
+            if !obj.is_empty() {
                 let dna_file = File::create(to.join(config_file_meta.as_str().unwrap()))?;
                 serde_json::to_writer_pretty(dna_file, &obj)?;
             }
