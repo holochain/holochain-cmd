@@ -71,8 +71,6 @@ impl Packager {
             .map(|e| e.unwrap().path().to_path_buf())
             .collect();
 
-        println!("ROOT! {:?}", root);
-
         let maybe_json_file_path = root
             .iter()
             .filter(|e| e.is_file())
@@ -128,7 +126,7 @@ impl Packager {
 
                     let build = Build::from_file(build_config)?;
 
-                    let wasm = build.run(node)?;
+                    let wasm = build.run(&node)?;
 
                     main_tree.insert(file_name.clone(), json!({ "code": wasm }));
                 } else {
