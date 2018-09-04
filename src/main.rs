@@ -1,6 +1,5 @@
 extern crate holochain_core;
 extern crate holochain_dna;
-#[macro_use]
 extern crate structopt;
 #[macro_use]
 extern crate failure;
@@ -14,6 +13,7 @@ extern crate dir_diff;
 extern crate semver;
 #[macro_use]
 extern crate serde_json;
+extern crate ignore;
 extern crate tempfile;
 extern crate uuid;
 
@@ -119,13 +119,13 @@ fn run() -> HolochainResult<()> {
             cli::package(strip_meta, output).or_else(|err| Err(HolochainError::Default(err)))?
         }
         Cli::Unpack { path, to } => {
-            cli::unpack(path, to).or_else(|err| Err(HolochainError::Default(err)))?
+            cli::unpack(&path, &to).or_else(|err| Err(HolochainError::Default(err)))?
         }
         Cli::Init { path, from } => {
-            cli::new(path, from).or_else(|err| Err(HolochainError::Default(err)))?
+            cli::new(&path, &from).or_else(|err| Err(HolochainError::Default(err)))?
         }
         Cli::Generate { zome, language } => {
-            cli::generate(zome, language).or_else(|err| Err(HolochainError::Default(err)))?
+            cli::generate(&zome, &language).or_else(|err| Err(HolochainError::Default(err)))?
         }
     }
 
