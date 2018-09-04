@@ -14,9 +14,9 @@ use util;
 pub const CODE_DIR_NAME: &str = "code";
 
 pub const BUILD_CONFIG_FILE_NAME: &str = ".build";
-pub const IGNORE_FILE_NAME: &str = ".hcdevignore";
 
 pub const CARGO_FILE_NAME: &str = "Cargo.toml";
+pub const IGNORE_FILE_NAME: &str = ".hcignore";
 
 pub const WASM_FILE_EXTENSION: &str = "wasm";
 
