@@ -64,7 +64,7 @@ In order for Holochain to run your app, you have to build your code into a singl
 
 ## Ignoring files
 
-Sometimes, you'll want to exclude files in your project directory to get a straight .hcpkg file that can be understood by Holochain. In oder to do that, just create a `.hcdevignore` file. It has a simmilar structure to `.gitignore` files:
+Sometimes, you'll want to exclude files in your project directory to get a straight .hcpkg file that can be understood by Holochain. In order to do that, just create a `.hcdevignore` file. It has a similar structure to `.gitignore` files:
 
 ```
 README.md
