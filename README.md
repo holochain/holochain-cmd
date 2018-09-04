@@ -62,18 +62,6 @@ So in a given Zome we have two things:
 
 In order for Holochain to run your app, you have to build your code into a single packaged file. Those instructions follow.
 
-## Ignoring files
-
-Sometimes, you'll want to exclude files in your project directory to get a straight .hcpkg file that can be understood by Holochain. In order to do that, just create a `.hcignore` file. It has a similar structure to `.gitignore` files:
-
-```
-README.md
-dist
-.DS_Store
-```
-
-The `package` command includes patterns inside `.gitignore` files automatically, so you don't have to write everything twice. Also *hidden* files are ignored by default as well.
-
 ## What are .hcpkg files?
 
 A Holochain app can be fully contained in a file known as a `.hcpkg` file.
@@ -96,7 +84,7 @@ More information about this follows.
 
 The `hcdev package` tool will automate the process of compiling your Zome code, encoding it, and inserting into the `.hcpkg` file. In order to get these benefits, you just need to make sure that you have the right compilation tools installed on the machine you are using the command line tools from, and that you have the proper configuration files in your Zome folders.
 
-`hcdev package` works with special files called `.build` files.
+`hcdev package` works with two special files called `.hcignore` files and `.build` files.
 
 ### .build files
 In the process of building a `.hcpkg` file, here is what Holochain does.
@@ -121,6 +109,17 @@ When using `hcdev generate` to scaffold a Zome, you will have a `.build` file au
 
 The two top level properties are `steps` and `artifact`. `steps` is a list of commands which will be sequentially executed to build a WASM file. `artifact` is the expected path to the built WASM file. Under `steps`, each key refers to the bin of the command that will be executed, such as `cargo`. The value of `cargo`, the command, is an array of arguments: `build`, and the two `--` flags. In order to determine what should go here, just try running the commands yourself from a terminal, while in the directory of the Zome code.
 
+### Ignoring using .hcignore files
+
+Sometimes, you'll want to exclude files and folders in your project directory to get a straight `.hcpkg` file that can be understood by Holochain. In order to do that, just create a `.hcignore` file. It has a similar structure to `.gitignore` files:
+
+```
+README.md
+dist
+.DS_Store
+```
+
+The `package` command includes patterns inside `.gitignore` files automatically, so you don't have to write everything twice. Also *hidden* files are ignored by default as well.
 
 ### Rust -> WASM compilation tools
 If we take Zome code in Rust as an example, you will need Rust and Cargo set up appropriately to build WASM from Rust code. WASM compilation is available on the `nightly` Rust toolchain. To enable it, run the following:
