@@ -1,4 +1,5 @@
 pub mod rust;
+pub mod assemblyscript;
 
 use error::DefaultResult;
 use std::path::Path;

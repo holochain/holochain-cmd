@@ -45,7 +45,7 @@ To do this, run the following, replacing `your_zome_name` with a name related to
 $ hcdev generate zomes/your_zome_name rust
 ```
 
-Currently, Rust is the only language that the tool will scaffold a Zome for. In the future, other languages will be included. In the command above, we declared `rust` just to be explicit, even though it's the default language.
+Currently, Zomes can be generated as `rust`, or as `assemblyscript`. `hcdev generate` scaffolds the files and config you need to get started. In the command above, we declared `rust` just to be explicit, even though it's the default language.
 
 What this did is generate a new folder under `zomes` called `users`. Here is the folder structure of it.
 - users
