@@ -15,6 +15,7 @@ pub const CODE_DIR_NAME: &str = "code";
 
 pub const BUILD_CONFIG_FILE_NAME: &str = ".build";
 
+pub const TYPESCRIPT_FILE_NAME: &str = "index.ts";
 pub const CARGO_FILE_NAME: &str = "Cargo.toml";
 pub const IGNORE_FILE_NAME: &str = ".hcignore";
 

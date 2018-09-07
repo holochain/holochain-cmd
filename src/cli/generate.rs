@@ -39,6 +39,7 @@ pub fn generate(zome_name: &PathBuf, language: &str) -> DefaultResult<()> {
     // match against all supported languages
     match language {
         "rust" => scaffold(&scaffold::rust::RustScaffold::new(), code_dir)?,
+        "asm" => scaffold(&scaffold::assemblyscript::AssemblyScriptScaffold::new(), code_dir)?,
         _ => bail!("unsupported language: {}", language),
     }
 
@@ -65,7 +66,7 @@ mod tests {
     }
 
     #[test]
-    fn can_generate_rust_scaffold() {
+    fn can_generate_scaffolds() {
         let tmp = gen_dir();
 
         Command::main_binary()
@@ -81,5 +82,13 @@ mod tests {
             .args(&["g", "zomes/bubblechat", "rust"])
             .assert()
             .success();
+
+         Command::main_binary()
+            .unwrap()
+            .current_dir(&tmp.path())
+            .args(&["g", "zomes/zubblebat", "asm"])
+            .assert()
+            .success();
+
     }
 }
