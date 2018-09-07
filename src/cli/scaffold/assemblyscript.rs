@@ -70,6 +70,16 @@ impl Scaffold for AssemblyScriptScaffold {
 
         typescript_file.write_all(require.as_bytes())?;
 
+        // create a tsconfig.json file
+        let tsconfig_file_path = base_path.as_ref().join(package::TSCONFIG_FILE_NAME);
+
+        let mut tsconfig_file = OpenOptions::new().write(true).create(true).open(tsconfig_file_path)?;
+
+        let tsconfig_json: &str =
+            "{\n  \"extends\":\"./node_modules/assemblyscript/std/assembly.json\",\n  \"include\":[\"./**/*.ts\"]\n}";
+
+        tsconfig_file.write_all(tsconfig_json.as_bytes())?;
+
         // create and fill in a build file appropriate for AssemblyScript
         let build_file_path = base_path.as_ref().join(package::BUILD_CONFIG_FILE_NAME);
 
