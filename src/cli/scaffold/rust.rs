@@ -8,6 +8,8 @@ use std::{
 };
 use util;
 
+pub const CARGO_FILE_NAME: &str = "Cargo.toml";
+
 pub struct RustScaffold {
     build_template: Build,
 }
@@ -41,7 +43,7 @@ impl Scaffold for RustScaffold {
         )?;
 
         // add hdk-rust dependency by default
-        let cargo_file_path = base_path.as_ref().join(package::CARGO_FILE_NAME);
+        let cargo_file_path = base_path.as_ref().join(CARGO_FILE_NAME);
 
         let mut cargo_file = OpenOptions::new().append(true).open(cargo_file_path)?;
 

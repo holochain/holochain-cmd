@@ -8,6 +8,9 @@ use std::{
 };
 use util;
 
+pub const TSCONFIG_FILE_NAME: &str = "tsconfig.json";
+pub const TYPESCRIPT_FILE_NAME: &str = "index.ts";
+
 pub struct AssemblyScriptScaffold {
     build_template: Build,
 }
@@ -61,7 +64,7 @@ impl Scaffold for AssemblyScriptScaffold {
         )?;
 
         // create a index.ts file
-        let typescript_file_path = base_path.as_ref().join(package::TYPESCRIPT_FILE_NAME);
+        let typescript_file_path = base_path.as_ref().join(TYPESCRIPT_FILE_NAME);
 
         let mut typescript_file = OpenOptions::new().write(true).create(true).open(typescript_file_path)?;
 
@@ -71,7 +74,7 @@ impl Scaffold for AssemblyScriptScaffold {
         typescript_file.write_all(require.as_bytes())?;
 
         // create a tsconfig.json file
-        let tsconfig_file_path = base_path.as_ref().join(package::TSCONFIG_FILE_NAME);
+        let tsconfig_file_path = base_path.as_ref().join(TSCONFIG_FILE_NAME);
 
         let mut tsconfig_file = OpenOptions::new().write(true).create(true).open(tsconfig_file_path)?;
 

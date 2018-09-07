@@ -15,9 +15,6 @@ pub const CODE_DIR_NAME: &str = "code";
 
 pub const BUILD_CONFIG_FILE_NAME: &str = ".build";
 
-pub const TSCONFIG_FILE_NAME: &str = "tsconfig.json";
-pub const TYPESCRIPT_FILE_NAME: &str = "index.ts";
-pub const CARGO_FILE_NAME: &str = "Cargo.toml";
 pub const IGNORE_FILE_NAME: &str = ".hcignore";
 
 pub const WASM_FILE_EXTENSION: &str = "wasm";
@@ -365,6 +362,13 @@ mod tests {
             .unwrap()
             .current_dir(&tmp.path())
             .args(&["g", "zomes/bubblechat", "rust"])
+            .assert()
+            .success();
+
+        Command::main_binary()
+            .unwrap()
+            .current_dir(&tmp.path())
+            .args(&["g", "zomes/zubblebat", "assemblyscript"])
             .assert()
             .success();
 
