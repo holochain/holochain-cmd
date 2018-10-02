@@ -3,7 +3,8 @@ name = "hcdev"
 version = "0.1.0"
 authors = [
   "philipbeadle <philip.beadle@live.com.au>",
-  "Julian Laubstein <contact@julianlaubstein.de>"
+  "Julian Laubstein <contact@julianlaubstein.de>",
+  "Connor Turland <connorturland@gmail.com>"
   ]
 
 [dependencies]

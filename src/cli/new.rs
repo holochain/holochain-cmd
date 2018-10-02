@@ -19,9 +19,6 @@ pub fn new(path: &PathBuf, _from: &Option<String>) -> DefaultResult<()> {
     }
 
     fs::create_dir_all(path.join("zomes"))?;
-    fs::create_dir_all(path.join("tests"))?;
-    fs::create_dir_all(path.join("scenarios"))?;
-    fs::create_dir_all(path.join("ui"))?;
 
     let app_config_file = File::create(path.join("app.json"))?;
     serde_json::to_writer_pretty(app_config_file, &AppConfig::default())?;
