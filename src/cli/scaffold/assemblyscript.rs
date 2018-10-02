@@ -69,7 +69,7 @@ impl Scaffold for AssemblyScriptScaffold {
         let mut typescript_file = OpenOptions::new().write(true).create(true).open(typescript_file_path)?;
 
         let require: &str =
-            "import { debug, commit_entry, get_entry } from \"hdk-assemblyscript\"";
+            "import { debug, commit_entry, get_entry } from \"./node_modules/hdk-assemblyscript\"";
 
         typescript_file.write_all(require.as_bytes())?;
 
