@@ -102,7 +102,7 @@ enum Cli {
     #[structopt(
         name = "test",
         alias = "t",
-        about = "Runs tests"
+        about = "Runs tests written in the test folder"
     )]
     Test,
 }
