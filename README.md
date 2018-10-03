@@ -1,10 +1,10 @@
 # Holochain Command Line Tools
 
 [![Project](https://img.shields.io/badge/project-holochain-blue.svg?style=flat-square)](http://holochain.org/)
-[![PM](https://img.shields.io/badge/pm-waffle-blue.svg?style=flat-square)](https://waffle.io/holochain/holochain-rust)
+[![PM](https://img.shields.io/badge/pm-waffle-blue.svg?style=flat-square)](https://waffle.io/holochain/org)
 [![Chat](https://img.shields.io/badge/chat-chat%2eholochain%2enet-blue.svg?style=flat-square)](https://chat.holochain.net)
 
-This repo provides a set of tools for building and running [Holochain](https://holochain.org) genomes from the command line. The tools are written in Rust, and delivered as binary executables.
+This repo provides a set of tools for building and running Holochain genomes from the command line. The tools are written in Rust, and delivered as binary executables.
 
 ## Install
 
