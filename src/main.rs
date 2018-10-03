@@ -99,6 +99,12 @@ enum Cli {
         )]
         language: String,
     },
+    #[structopt(
+        name = "test",
+        alias = "t",
+        about = "Runs tests"
+    )]
+    Test,
 }
 
 fn main() {
@@ -126,6 +132,9 @@ fn run() -> HolochainResult<()> {
         }
         Cli::Generate { zome, language } => {
             cli::generate(&zome, &language).or_else(|err| Err(HolochainError::Default(err)))?
+        }
+        Cli::Test => {
+            cli::test().or_else(|err| Err(HolochainError::Default(err)))?
         }
     }
 

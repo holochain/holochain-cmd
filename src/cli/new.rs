@@ -76,7 +76,7 @@ pub fn new(path: &PathBuf, _from: &Option<String>) -> DefaultResult<()> {
     serde_json::to_writer_pretty(app_config_file, &AppConfig::default())?;
 
     // create a default .hcignore file with good defaults
-    let ignores = format!("{}\n{}\n{}\n", "test", "README.md", &DEFAULT_BUNDLE_FILE_NAME);
+    let ignores = format!("{}\n{}\n{}\n{}\n", "dist", "test", "README.md", &DEFAULT_BUNDLE_FILE_NAME);
     let mut hcignore_file = File::create(path.join(&IGNORE_FILE_NAME))?;
     hcignore_file.write_all(ignores.as_bytes())?;
 
