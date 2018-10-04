@@ -134,7 +134,8 @@ fn run() -> HolochainResult<()> {
             cli::generate(&zome, &language).or_else(|err| Err(HolochainError::Default(err)))?
         }
         Cli::Test => {
-            cli::test().or_else(|err| Err(HolochainError::Default(err)))?
+            // just call with defaults, no cli config
+            cli::test(&PathBuf::new().join("."), &cli::TEST_DIR_NAME).or_else(|err| Err(HolochainError::Default(err)))?
         }
     }
 
