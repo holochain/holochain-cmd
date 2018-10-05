@@ -99,6 +99,12 @@ enum Cli {
         )]
         language: String,
     },
+    #[structopt(
+        name = "test",
+        alias = "t",
+        about = "Runs tests written in the test folder"
+    )]
+    Test,
 }
 
 fn main() {
@@ -126,6 +132,10 @@ fn run() -> HolochainResult<()> {
         }
         Cli::Generate { zome, language } => {
             cli::generate(&zome, &language).or_else(|err| Err(HolochainError::Default(err)))?
+        }
+        Cli::Test => {
+            // just call with defaults, no cli config
+            cli::test(&PathBuf::new().join("."), &cli::TEST_DIR_NAME).or_else(|err| Err(HolochainError::Default(err)))?
         }
     }
 

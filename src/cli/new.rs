@@ -4,6 +4,10 @@ use cli::package::{
     IGNORE_FILE_NAME,
     DEFAULT_BUNDLE_FILE_NAME
 };
+use cli::test::{
+    TEST_DIR_NAME,
+    DIST_DIR_NAME,
+};
 use util;
 use error::DefaultResult;
 use serde_json;
@@ -76,7 +80,7 @@ pub fn new(path: &PathBuf, _from: &Option<String>) -> DefaultResult<()> {
     serde_json::to_writer_pretty(app_config_file, &AppConfig::default())?;
 
     // create a default .hcignore file with good defaults
-    let ignores = format!("{}\n{}\n{}\n", "test", "README.md", &DEFAULT_BUNDLE_FILE_NAME);
+    let ignores = format!("{}\n{}\n{}\n{}\n", &DIST_DIR_NAME, &TEST_DIR_NAME, "README.md", &DEFAULT_BUNDLE_FILE_NAME);
     let mut hcignore_file = File::create(path.join(&IGNORE_FILE_NAME))?;
     hcignore_file.write_all(ignores.as_bytes())?;
 
@@ -89,7 +93,7 @@ pub fn new(path: &PathBuf, _from: &Option<String>) -> DefaultResult<()> {
         url: "https://github.com/holochain/js-tests-scaffold.git".to_string(),
         commit: None
     };
-    setup_test_folder(&path, "test", test_repo)?;
+    setup_test_folder(&path, &TEST_DIR_NAME, test_repo)?;
 
     println!(
         "{} new Holochain project at: {:?}",
@@ -103,6 +107,7 @@ pub fn new(path: &PathBuf, _from: &Option<String>) -> DefaultResult<()> {
 #[cfg(test)]
 pub mod tests {
     use super::*;
+    use cli::test::TEST_DIR_NAME;
     use tempfile::{Builder, TempDir};
 
     const HOLOCHAIN_TEST_PREFIX: &str = "org.holochain.test";
@@ -120,17 +125,16 @@ pub mod tests {
         // this test is deterministic
         let dir = gen_dir();
         let dir_path_buf = &dir.path().to_path_buf();
-        let test_folder = "test";
         let test_repo = TestRepo {
             name: "js-tests-scaffold".to_string(),
             url: "https://github.com/holochain/js-tests-scaffold.git".to_string(),
             commit: Some("26825da5b19a0e4c14273174f9776f929b05c967".to_string())
         };
-        setup_test_folder(dir_path_buf, test_folder, test_repo);
+        setup_test_folder(dir_path_buf, &TEST_DIR_NAME, test_repo);
 
-        assert!(dir_path_buf.join(test_folder).join("index.js").exists());
-        assert!(dir_path_buf.join(test_folder).join("package.json").exists());
-        assert!(dir_path_buf.join(test_folder).join("webpack.config.js").exists());
-        assert!(dir_path_buf.join(test_folder).join("README.md").exists());
+        assert!(dir_path_buf.join(&TEST_DIR_NAME).join("index.js").exists());
+        assert!(dir_path_buf.join(&TEST_DIR_NAME).join("package.json").exists());
+        assert!(dir_path_buf.join(&TEST_DIR_NAME).join("webpack.config.js").exists());
+        assert!(dir_path_buf.join(&TEST_DIR_NAME).join("README.md").exists());
     }
 }
