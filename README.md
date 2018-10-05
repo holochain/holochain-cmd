@@ -8,7 +8,12 @@ This repo provides a set of tools for building and running Holochain genomes fro
 
 ## Install
 
-Prerequisite: [Rust](https://www.rust-lang.org/en-US/install.html) must be installed on your computer
+Dependencies:
+
+- [Rust](https://www.rust-lang.org/en-US/install.html) (nightly version, i.e. use `rustup toolchain install nightly`)
+- [Node.js](https://nodejs.org) (needed for running tests)
+- [holoconsole](https://github.com/holochain/holosqape) (also needed for running tests, holoconsole is currently installed as part of holosqape)
+
 
 To install the Holochain command line, run the following commands in a terminal
 ```shell
@@ -31,7 +36,8 @@ Run `hcdev help` for help.
 | generate  | Generates a new zome and scaffolds the given capabilities           |
 | init      | Initializes a new Holochain app at the given directory              |
 | package   | Builds the current Holochain app into a `.hcpkg` file               |
-| unpack    | Unpacks a Holochain bundle into its original file system structure |
+| unpack    | Unpacks a Holochain bundle into its original file system structure  |
+| test      | Runs tests written in the test folder                               |
 | web (u)   | Starts a web server for the current Holochain app                   |
 
 ## How To Get Started Building An App
