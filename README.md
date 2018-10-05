@@ -14,6 +14,8 @@ Dependencies:
   - needs to be the `nightly` build, so use the following commands, once you have first installed Rust
   - `rustup toolchain install nightly`
   - `rustup default nightly`
+  - Also, if you are going to be developing Zomes in Rust, install the WASM build target for Rust, by running:
+  - `rustup target add wasm32-unknown-unknown --toolchain nightly`
 - [Node.js](https://nodejs.org) (needed for running tests)
 - [holoconsole](https://github.com/holochain/holosqape) (also needed for running tests, holoconsole is currently installed as part of holosqape)
 
