@@ -10,7 +10,10 @@ This repo provides a set of tools for building and running Holochain genomes fro
 
 Dependencies:
 
-- [Rust](https://www.rust-lang.org/en-US/install.html) (nightly version, i.e. use `rustup toolchain install nightly`)
+- [Rust](https://www.rust-lang.org/en-US/install.html)
+  - needs to be the `nightly` build, so use the following commands, once you have first installed Rust
+  - `rustup toolchain install nightly`
+  - `rustup default nightly`
 - [Node.js](https://nodejs.org) (needed for running tests)
 - [holoconsole](https://github.com/holochain/holosqape) (also needed for running tests, holoconsole is currently installed as part of holosqape)
 
