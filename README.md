@@ -1,12 +1,16 @@
 # Holochain Command Line Tools
 
-`holochain-cmd` is a set of tools for building and running [Holochain](https://holochain.org) applications from the command line. The tools are written in Rust, and delivered as binary executables.
+[![Project](https://img.shields.io/badge/project-holochain-blue.svg?style=flat-square)](http://holochain.org/)
+[![PM](https://img.shields.io/badge/pm-waffle-blue.svg?style=flat-square)](https://waffle.io/holochain/org)
+[![Chat](https://img.shields.io/badge/chat-chat%2eholochain%2enet-blue.svg?style=flat-square)](https://chat.holochain.net)
 
-## How To Install
+This repo provides a set of tools for building and running Holochain genomes from the command line. The tools are written in Rust, and delivered as binary executables.
+
+## Install
 
 Prerequisite: [Rust](https://www.rust-lang.org/en-US/install.html) must be installed on your computer
 
-To install the Holochain command line , run the following commands in a terminal
+To install the Holochain command line, run the following commands in a terminal
 ```shell
 $ git clone https://github.com/holochain/holochain-cmd.git
 $ cd holochain-cmd
@@ -17,7 +21,7 @@ The command line tools are now available in your command line using the `hcdev` 
 Run `hcdev -V` to confirm.
 Run `hcdev help` for help.
 
-## Available Commands
+## Usage
 
 `(u)` means the command is as-yet unimplemented.
 
@@ -132,3 +136,18 @@ $ rustup default nightly # switch to the nightly rust toolchain as your default
 Once that's done, you should be able to run commands like `cargo build --target=wasm32-unknown-unknown` and have it work.
 
 Once all of this is set up, you can build and run your `.hcpkg` file with Holochain!
+
+## Contribute
+Holochain is an open source project.  We welcome all sorts of participation and are actively working on increasing surface area to accept it.  Please see our [contributing guidelines](https://github.com/holochain/org/blob/master/CONTRIBUTING.md) for our general practices and protocols on participating in the community.
+
+## License
+[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0)
+
+Copyright (C) 2018, Holochain Trust
+
+This program is free software: you can redistribute it and/or modify it under the terms of the license p
+rovided in the LICENSE file (GPLv3).  This program is distributed in the hope that it will be useful, bu
+t WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+ PURPOSE.
+
+**Note:** We are considering other 'looser' licensing options (like MIT license) but at this stage are using GPL while we're getting the matter sorted out.  See [this article](https://medium.com/holochain/licensing-needs-for-truly-p2p-software-a3e0fa42be6c) for some of our thinking on licensing for distributed application frameworks.
