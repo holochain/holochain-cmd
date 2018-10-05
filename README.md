@@ -33,7 +33,7 @@ Run `hcdev help` for help.
 | init      | Initializes a new Holochain app at the given directory              |
 | package   | Builds the current Holochain app into a `.hcpkg` file               |
 | unpack    | Unpacks a Holochain bundle into its original file system structure  |
-| test      | Runs tests written in the test folder
+| test      | Runs tests written in the test folder                               |
 | web (u)   | Starts a web server for the current Holochain app                   |
 
 ## How To Get Started Building An App
