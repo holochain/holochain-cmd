@@ -3,6 +3,7 @@ use error::DefaultResult;
 use util;
 use cli::package;
 use std::{
+    process::{Command, Stdio},
     fs,
     path::{PathBuf}
 };
@@ -58,14 +59,23 @@ pub fn test(path: &PathBuf, tests_folder: &str) -> DefaultResult<()> {
     ])?;
 
     // execute the built test file using holoconsole
+    // piping the output through faucet
     println!(
         "{} tests in {}",
         "Running".green().bold(),
         js_test_path
     );
-    util::run_cmd(path.to_path_buf(), "holoconsole".to_string(), vec![
-        js_test_path,
-    ])?;
+    let cmd = Command::new("holoconsole")
+        .arg(js_test_path)
+        .current_dir(path.to_path_buf())
+        .stdout(Stdio::piped())
+        .spawn()
+        .unwrap();
+    
+    Command::new("test/node_modules/faucet/bin/cmd.js")
+        .current_dir(path.to_path_buf())
+        .stdin(cmd.stdout.unwrap())
+        .status()?;
 
     Ok(())
 }
