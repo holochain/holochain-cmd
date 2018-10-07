@@ -1,11 +1,12 @@
-language: rust
+services:
+  - docker
 
-cache: cargo
+dist: trusty
 
-rust:
-  - nightly-2018-08-29
-
-install:
-  - nvm install 8.12.0
-  - rustup update
-  - rustup target add wasm32-unknown-unknown
+jobs:
+  include:
+    - stage: "All"
+      name: "Tests"
+      install: docker pull holochain/app-spec-rust:master
+      script:
+        - . docker/run-ci
