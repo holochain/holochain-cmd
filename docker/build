@@ -1,2 +1,2 @@
 #!/bin/bash
-docker build -f docker/Dockerfile.holochain-cmd -t holochain/holochain-cmd:master "$@" .
+docker build -f docker/Dockerfile.holochain-cmd -t holochain/holochain-cmd:add-docker "$@" .
