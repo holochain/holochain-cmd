@@ -3,7 +3,7 @@ use error::DefaultResult;
 use util;
 use cli::package;
 use std::{
-    process::{Command, Stdio},
+    process::{Command},
     fs,
     path::{PathBuf}
 };
@@ -11,7 +11,7 @@ use std::{
 pub const TEST_DIR_NAME: &str = "test";
 pub const DIST_DIR_NAME: &str = "dist";
 
-pub fn test(path: &PathBuf, tests_folder: &str) -> DefaultResult<()> {
+pub fn test(path: &PathBuf, tests_folder: &str) -> DefaultResult<Vec<u8>> {
 
     // create dist folder
     let dist_path = path.join(&DIST_DIR_NAME);
@@ -65,19 +65,13 @@ pub fn test(path: &PathBuf, tests_folder: &str) -> DefaultResult<()> {
         "Running".green().bold(),
         js_test_path
     );
-    let cmd = Command::new("holoconsole")
+    let output = Command::new("holoconsole")
         .arg(js_test_path)
         .current_dir(path.to_path_buf())
-        .stdout(Stdio::piped())
-        .spawn()
-        .unwrap();
-    
-    Command::new("test/node_modules/faucet/bin/cmd.js")
-        .current_dir(path.to_path_buf())
-        .stdin(cmd.stdout.unwrap())
-        .status()?;
+        .output()
+        .expect("Failed to execute holoconsole test");
 
-    Ok(())
+    Ok(output.stdout)
 }
 
 #[cfg(test)]
