@@ -30,4 +30,5 @@ RUN qmake CONFIG+=release
 RUN make
 
 WORKDIR /holochain
+RUN npm install npm --global
 RUN chown holochain:holochain -R /holochain/*
