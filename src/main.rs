@@ -118,11 +118,11 @@ enum Cli {
         )]
         testfile: Option<String>,
         #[structopt(
-            long = "npm",
-            short = "n",
-            help = "Whether to run npm install and npm run build, defaults to true",
+            long = "skip-npm",
+            short = "s",
+            help = "Skip npm install and npm run build, defaults to false",
         )]
-        npm: Option<bool>,
+        skip_npm: Option<bool>,
     },
 }
 
@@ -152,14 +152,14 @@ fn run() -> HolochainResult<()> {
         Cli::Generate { zome, language } => {
             cli::generate(&zome, &language).or_else(|err| Err(HolochainError::Default(err)))?
         }
-        Cli::Test { dir, testfile, npm }=> {
+        Cli::Test { dir, testfile, skip_npm }=> {
             let tests_folder = dir.unwrap_or(cli::TEST_DIR_NAME.to_string());
             // this "magic string" comes from the webpack config
             // in the js-tests-scaffold: https://github.com/holochain/js-tests-scaffold/blob/master/webpack.config.js#L5-L8
             // they need to stay in sync
             let test_file = testfile.unwrap_or("test/dist/bundle.js".to_string());
-            let run_npm = npm.unwrap_or(true);
-            cli::test(&PathBuf::new().join("."), &tests_folder, &test_file, run_npm).or_else(|err| Err(HolochainError::Default(err)))?
+            let bool_skip_npm = skip_npm.unwrap_or(false);
+            cli::test(&PathBuf::new().join("."), &tests_folder, &test_file, bool_skip_npm).or_else(|err| Err(HolochainError::Default(err)))?
         }
     }
 

@@ -163,7 +163,7 @@ Once you have a project folder initiated, you can run `hcdev test` to execute yo
 
 If you want to run it without running the `npm` commands, run it with
 ```shell
-hcdev test --npm=false
+hcdev test --skip-npm
 ```
 
 If your tests are in a different folder than `test`, run it with
