@@ -163,7 +163,7 @@ Some of these should be configurable options soon.
 
 You have the flexibility to write tests in quite a variety of ways, open to you to explore.
 
-**Note about default configuration with TAPE testing**: If you use the default configuration with Tape for testing, to get an improved CLI visual output (with colors!), we recommend adjusting the command you use to run tests as follows:
+**Note about default configuration with TAPE testing**: If you use the default configuration with Tape for testing, to get an improved CLI visual output (with colors! and accurate script exit codes), we recommend adjusting the command you use to run tests as follows:
 ```
 hcdev test | test/node_modules/faucet/bin/cmd.js
 ```
