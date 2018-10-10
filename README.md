@@ -158,8 +158,25 @@ Once you have a project folder initiated, you can run `hcdev test` to execute yo
   2. Installing build and testing dependencies, if they're not installed (`npm install`)
   3. Building a single JS file used for testing, placed at `test/dist/bundle.js` (`npm run build`)
   4. Executing (with [holoconsole](https://github.com/holochain/holosqape)) the test file found at `test/dist/bundle.js`
-  
-Some of these should be configurable options soon.
+
+`hcdev test` also has some configurable options.
+
+If you want to run it without running the `npm` commands, run it with
+```shell
+hcdev test --npm=false
+```
+
+If your tests are in a different folder than `test`, run it with
+```shell
+hcdev test --dir tests
+```
+ where `tests` is the name of the folder.
+
+If the file you wish to actually execute is somewhere besides `test/dist/bundle.js` then run it with
+```shell
+hcdev test --testfile test/test.js
+```
+where `test/test.js` is the path of the file.
 
 You have the flexibility to write tests in quite a variety of ways, open to you to explore.
 

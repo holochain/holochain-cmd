@@ -104,7 +104,26 @@ enum Cli {
         alias = "t",
         about = "Runs tests written in the test folder"
     )]
-    Test,
+    Test {
+        #[structopt(
+            long = "dir",
+            short = "d",
+            help = "The folder containing the test files, defaults to 'test'",
+        )]
+        dir: Option<String>,
+        #[structopt(
+            long = "testfile",
+            short = "t",
+            help = "The path of the file to test, defaults to 'test/dist/bundle.js'",
+        )]
+        testfile: Option<String>,
+        #[structopt(
+            long = "npm",
+            short = "n",
+            help = "Whether to run npm install and npm run build, defaults to true",
+        )]
+        npm: Option<bool>,
+    },
 }
 
 fn main() {
@@ -133,9 +152,14 @@ fn run() -> HolochainResult<()> {
         Cli::Generate { zome, language } => {
             cli::generate(&zome, &language).or_else(|err| Err(HolochainError::Default(err)))?
         }
-        Cli::Test => {
-            // just call with defaults, no cli config
-            cli::test(&PathBuf::new().join("."), &cli::TEST_DIR_NAME).or_else(|err| Err(HolochainError::Default(err)))?
+        Cli::Test { dir, testfile, npm }=> {
+            let tests_folder = dir.unwrap_or(cli::TEST_DIR_NAME.to_string());
+            // this "magic string" comes from the webpack config
+            // in the js-tests-scaffold: https://github.com/holochain/js-tests-scaffold/blob/master/webpack.config.js#L5-L8
+            // they need to stay in sync
+            let test_file = testfile.unwrap_or("test/dist/bundle.js".to_string());
+            let run_npm = npm.unwrap_or(true);
+            cli::test(&PathBuf::new().join("."), &tests_folder, &test_file, run_npm).or_else(|err| Err(HolochainError::Default(err)))?
         }
     }
 
