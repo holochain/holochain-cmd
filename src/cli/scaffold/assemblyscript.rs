@@ -52,17 +52,6 @@ impl Scaffold for AssemblyScriptScaffold {
             ],
         )?;
 
-        // add assemblyscript as a dev dependency
-        util::run_cmd(
-            base_path.as_ref().to_path_buf(),
-            "npm".into(),
-            vec![
-                "install".to_owned(),
-                "--save-dev".to_owned(),
-                "AssemblyScript/assemblyscript".to_owned()
-            ],
-        )?;
-
         // create a index.ts file
         let typescript_file_path = base_path.as_ref().join(TYPESCRIPT_FILE_NAME);
 
