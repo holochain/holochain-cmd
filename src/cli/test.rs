@@ -10,23 +10,25 @@ use std::{
 pub const TEST_DIR_NAME: &str = "test";
 pub const DIST_DIR_NAME: &str = "dist";
 
-pub fn test(path: &PathBuf, tests_folder: &str, testfile: &str, skip_npm: bool) -> DefaultResult<()> {
+pub fn test(path: &PathBuf, tests_folder: &str, testfile: &str, skip_npm: bool, skip_build: bool) -> DefaultResult<()> {
 
     // create dist folder
     let dist_path = path.join(&DIST_DIR_NAME);
-    
+
     if !dist_path.exists() {
         fs::create_dir(dist_path.as_path())?;
     }
 
-    // build the package file, within the dist folder
-    let bundle_file_path = dist_path.join(package::DEFAULT_BUNDLE_FILE_NAME);
-    println!(
-        "{} files for testing to file: {:?}",
-        "Packaging".green().bold(),
-        bundle_file_path
-    );
-    package(true, Some(bundle_file_path.to_path_buf()))?;
+    if !skip_build {
+        // build the package file, within the dist folder
+        let bundle_file_path = dist_path.join(package::DEFAULT_BUNDLE_FILE_NAME);
+        println!(
+            "{} files for testing to file: {:?}",
+            "Packaging".green().bold(),
+            bundle_file_path
+        );
+        package(true, Some(bundle_file_path.to_path_buf()))?;
+    }
 
     // build tests
     let tests_path = path.join(&tests_folder);
@@ -103,7 +105,7 @@ pub mod tests {
                 .assert()
                 .success();
 
-        let result = test(&temp_dir_path_buf, &TEST_DIR_NAME, "test/dist/bundle.js", false);
+        let result = test(&temp_dir_path_buf, &TEST_DIR_NAME, "test/dist/bundle.js", false, false);
 
         assert!(result.is_ok());
         // check success of packaging step
@@ -127,7 +129,7 @@ pub mod tests {
                 .assert()
                 .success();
 
-        let result = test(&temp_dir_path_buf, &TEST_DIR_NAME, "test/dist/index.js", true);
+        let result = test(&temp_dir_path_buf, &TEST_DIR_NAME, "test/dist/index.js", true, false);
 
         // is err because "holoconsole test/dist/index.js" will have failed
         // but the important thing is that the npm calls weren't made
@@ -153,7 +155,7 @@ pub mod tests {
                 .assert()
                 .success();
 
-        let result = test(&temp_dir_path_buf, "west", "test/dist/bundle.js", false);
+        let result = test(&temp_dir_path_buf, "west", "test/dist/bundle.js", false, false);
 
         // should err because "west" directory doesn't exist
         assert!(result.is_err());
