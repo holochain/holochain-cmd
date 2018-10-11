@@ -30,8 +30,8 @@ and make it compatible with the Holochain API.
 */
 
 @zome_function
-function testfunction(param1: string, param2: i32): string {
-    const myTest: TestClass = {
+function testfunction(param1: string): string {
+    let myTest: TestClass = {
         key: "hello",
         otherKey: 23
     };
