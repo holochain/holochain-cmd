@@ -1,5 +1,5 @@
 [package]
-name = "hcdev"
+name = "hc"
 version = "0.1.0"
 authors = [
   "philipbeadle <philip.beadle@live.com.au>",

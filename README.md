@@ -27,9 +27,9 @@ $ cd holochain-cmd
 $ cargo install -f --path .
 ```
 
-The command line tools are now available in your command line using the `hcdev` command.
-Run `hcdev -V` to confirm.
-Run `hcdev help` for help.
+The command line tools are now available in your command line using the `hc` command.
+Run `hc -V` to confirm.
+Run `hc help` for help.
 
 ## Usage
 
@@ -50,17 +50,17 @@ Run `hcdev help` for help.
 In your terminal, change directories to one where you wish to initialize a new Holochain app.
 Run the following, replacing `your_app_name` with your actual app name:
 ```shell
-$ hcdev init your_app_name
+$ hc init your_app_name
 $ cd your_app_name
 ```
 
 We now have the empty shell of a Holochain app. From here, we will want to generate at least one Zome.
 To do this, run the following, replacing `your_zome_name` with a name related to the functionality you wish to develop. For example: `users`.
 ```shell
-$ hcdev generate zomes/your_zome_name rust
+$ hc generate zomes/your_zome_name rust
 ```
 
-Currently, Zomes can be generated as `rust`, or as `assemblyscript`. `hcdev generate` scaffolds the files and config you need to get started. In the command above, we declared `rust` just to be explicit, even though it's the default language.
+Currently, Zomes can be generated as `rust`, or as `assemblyscript`. `hc generate` scaffolds the files and config you need to get started. In the command above, we declared `rust` just to be explicit, even though it's the default language.
 
 What this did is generate a new folder under `zomes` called `users`. Here is the folder structure of it.
 - users
@@ -91,15 +91,15 @@ Rather than storing the code in its ugly raw WASM bytecode format, Holochain exp
 
 If you haven't heard of WebAssembly (WASM for short), that's ok. Important to know is that WASM is intended as a "compilation target" for other languages, not a language to write code in. So instead of writing code in WASM, write code in a language that's familiar to you, and [supports WASM](https://github.com/appcypher/awesome-wasm-langs). When it's time to run your code in Holochain, compile it.
 
-In order to avoid having to handcraft this complex JSON structure, with lots of room for error, the `hcdev package` command streamlines the process of taking your "raw" application folder, and packaging it up into the final `.hcpkg` file.
+In order to avoid having to handcraft this complex JSON structure, with lots of room for error, the `hc package` command streamlines the process of taking your "raw" application folder, and packaging it up into the final `.hcpkg` file.
 
 More information about this follows.
 
 ## Using Built-in Compilation
 
-The `hcdev package` tool will automate the process of compiling your Zome code, encoding it, and inserting into the `.hcpkg` file. In order to get these benefits, you just need to make sure that you have the right compilation tools installed on the machine you are using the command line tools from, and that you have the proper configuration files in your Zome folders.
+The `hc package` tool will automate the process of compiling your Zome code, encoding it, and inserting into the `.hcpkg` file. In order to get these benefits, you just need to make sure that you have the right compilation tools installed on the machine you are using the command line tools from, and that you have the proper configuration files in your Zome folders.
 
-`hcdev package` works with two special files called `.hcignore` files and `.build` files.
+`hc package` works with two special files called `.hcignore` files and `.build` files.
 
 ### .build files
 In the process of building a `.hcpkg` file, here is what Holochain does.
@@ -108,7 +108,7 @@ In the process of building a `.hcpkg` file, here is what Holochain does.
 - For any folder with a `.build` file, it executes one or more commands from the `.build` file to create a WASM file
 - It takes that built WASM file and Base64 encodes it, then stores a key/value pair for the Zome with the key as the folder name and the encoded WASM as the value
 
-When using `hcdev generate` to scaffold a Zome, you will have a `.build` file automatically. If you create your Zome manually however, you will need to create the file yourself. Here's the structure of a `.build` file, using a Rust Zome which builds using Cargo as an example:
+When using `hc generate` to scaffold a Zome, you will have a `.build` file automatically. If you create your Zome manually however, you will need to create the file yourself. Here's the structure of a `.build` file, using a Rust Zome which builds using Cargo as an example:
 ```json
 {
   "steps": {
