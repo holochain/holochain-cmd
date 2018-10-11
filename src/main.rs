@@ -108,36 +108,69 @@ enum Cli {
 }
 
 fn main() {
-    if let Err(err) = run() {
-        eprintln!("{}", err);
+    match run() {
+        Ok(output) => {
+            match output {
+                Some(result) => println!("{}", String::from_utf8_lossy(&result)),
+                None => {}
+            }
+        }
+        Err(err) => {
+            eprintln!("{}", err);
 
-        ::std::process::exit(1);
+            ::std::process::exit(1);
+        }
     }
 }
 
-fn run() -> HolochainResult<()> {
+fn run() -> HolochainResult<Option<Vec<u8>>> {
     let args = Cli::from_args();
 
-    match args {
-        Cli::Web { port } => cli::web(port).or_else(|err| Err(HolochainError::Default(err)))?,
-        Cli::Agent => cli::agent().or_else(|err| Err(HolochainError::Default(err)))?,
+    let maybe_result = match args {
+        Cli::Web { port } => {
+            match cli::web(port).or_else(|err| Err(HolochainError::Default(err))) {
+                Ok(_) => Ok(None),
+                Err(err) => Err(err)
+            }
+        },
+        Cli::Agent => {
+            match cli::agent().or_else(|err| Err(HolochainError::Default(err))) {
+                Ok(_) => Ok(None),
+                Err(err) => Err(err)
+            }
+        },
         Cli::Package { strip_meta, output } => {
-            cli::package(strip_meta, output).or_else(|err| Err(HolochainError::Default(err)))?
+            match cli::package(strip_meta, output).or_else(|err| Err(HolochainError::Default(err))) {
+                Ok(_) => Ok(None),
+                Err(err) => Err(err)
+            }
         }
         Cli::Unpack { path, to } => {
-            cli::unpack(&path, &to).or_else(|err| Err(HolochainError::Default(err)))?
+            match cli::unpack(&path, &to).or_else(|err| Err(HolochainError::Default(err))) {
+                Ok(_) => Ok(None),
+                Err(err) => Err(err)
+            }
         }
         Cli::Init { path, from } => {
-            cli::new(&path, &from).or_else(|err| Err(HolochainError::Default(err)))?
+            match cli::new(&path, &from).or_else(|err| Err(HolochainError::Default(err))) {
+                Ok(_) => Ok(None),
+                Err(err) => Err(err)
+            }
         }
         Cli::Generate { zome, language } => {
-            cli::generate(&zome, &language).or_else(|err| Err(HolochainError::Default(err)))?
+            match cli::generate(&zome, &language).or_else(|err| Err(HolochainError::Default(err))) {
+                Ok(_) => Ok(None),
+                Err(err) => Err(err)
+            }
         }
         Cli::Test => {
             // just call with defaults, no cli config
-            cli::test(&PathBuf::new().join("."), &cli::TEST_DIR_NAME).or_else(|err| Err(HolochainError::Default(err)))?
+            match cli::test(&PathBuf::new().join("."), &cli::TEST_DIR_NAME).or_else(|err| Err(HolochainError::Default(err))) {
+                Ok(output) => Ok(Some(output)),
+                Err(err) => Err(err)
+            }
         }
-    }
+    };
 
-    Ok(())
+    maybe_result
 }
