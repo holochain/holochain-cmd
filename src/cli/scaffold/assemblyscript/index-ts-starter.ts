@@ -13,9 +13,8 @@ There are decorators available to simplify development.
 
 You can delete the following examples, or modify them to get started.
 
-The following decorator enables an object of a particular class to be converted to a string,
-by calling .toString() on it. You DON'T need to do this manually if passing it
-into `debug` or `commit_entry`
+The can_stringify decorator enables an object of a particular class to be converted to a string by calling .toString() on it.
+It also enables debug and commit_entry to implicitly convert parameters of this type into strings.
 */
 
 @can_stringify
@@ -25,8 +24,8 @@ class TestClass {
 }
 
 /*
-The following decorator will support the conversion and exporting of your function automatically,
-and make it compatible with the Holochain API.
+Use the zome_function decorator to expose this function as a zome function.
+It enables automatic serialization/deserialization of arguments and return values.
 */
 
 @zome_function
