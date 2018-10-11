@@ -57,10 +57,9 @@ impl Scaffold for AssemblyScriptScaffold {
 
         let mut typescript_file = OpenOptions::new().write(true).create(true).open(typescript_file_path)?;
 
-        let require: &str =
-            "import { debug, commit_entry, get_entry } from \"./node_modules/hdk-assemblyscript\"";
+        let js_starter = include_str!("index-ts-starter.ts");
 
-        typescript_file.write_all(require.as_bytes())?;
+        typescript_file.write_all(js_starter.as_bytes())?;
 
         // create a tsconfig.json file
         let tsconfig_file_path = base_path.as_ref().join(TSCONFIG_FILE_NAME);
