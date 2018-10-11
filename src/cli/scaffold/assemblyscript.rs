@@ -48,7 +48,7 @@ impl Scaffold for AssemblyScriptScaffold {
             vec![
                 "install".to_owned(),
                 "--save".to_owned(),
-                "holochain/hdk-assemblyscript".to_owned()
+                "holochain/hdk-assemblyscript".to_owned(),
             ],
         )?;
 
@@ -57,18 +57,16 @@ impl Scaffold for AssemblyScriptScaffold {
 
         let mut typescript_file = OpenOptions::new().write(true).create(true).open(typescript_file_path)?;
 
-        let require: &str =
-            "import { debug, commit_entry, get_entry } from \"./node_modules/hdk-assemblyscript\"";
+        let js_starter = include_str!("assemblyscript/index-ts-starter.ts");
 
-        typescript_file.write_all(require.as_bytes())?;
+        typescript_file.write_all(js_starter.as_bytes())?;
 
         // create a tsconfig.json file
         let tsconfig_file_path = base_path.as_ref().join(TSCONFIG_FILE_NAME);
 
         let mut tsconfig_file = OpenOptions::new().write(true).create(true).open(tsconfig_file_path)?;
 
-        let tsconfig_json: &str =
-            "{\n  \"extends\":\"./node_modules/assemblyscript/std/assembly.json\",\n  \"include\":[\"./**/*.ts\"]\n}";
+        let tsconfig_json = include_str!("assemblyscript/tsconfig.json");
 
         tsconfig_file.write_all(tsconfig_json.as_bytes())?;
 
