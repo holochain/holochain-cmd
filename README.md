@@ -148,6 +148,44 @@ Once that's done, you should be able to run commands like `cargo build --target=
 
 Once all of this is set up, you can build and run your `.hcpkg` file with Holochain!
 
+### Writing and Running Tests
+By default, when you use `hc init` to create a new project folder, it creates a sub-directory called `test`. The files in that folder are equipped for testing your project. 
+
+Checkout the README of our default testing configuration to understand how to write your tests in Javascript: [https://github.com/holochain/js-tests-scaffold](https://github.com/holochain/js-tests-scaffold).
+
+Once you have a project folder initiated, you can run `hc test` to execute your tests. This combines the following steps:
+  1. Packaging your files into a DNA file, located at `dist/bundle.json`. This step will fail if your packaging step fails.
+  2. Installing build and testing dependencies, if they're not installed (`npm install`)
+  3. Building a single JS file used for testing, placed at `test/dist/bundle.js` (`npm run build`)
+  4. Executing (with [holoconsole](https://github.com/holochain/holosqape)) the test file found at `test/dist/bundle.js`
+
+`hc test` also has some configurable options.
+
+If you want to run it without running the `npm` commands, run it with
+```shell
+hc test --skip-npm
+```
+
+If your tests are in a different folder than `test`, run it with
+```shell
+hc test --dir tests
+```
+ where `tests` is the name of the folder.
+
+If the file you wish to actually execute is somewhere besides `test/dist/bundle.js` then run it with
+```shell
+hc test --testfile test/test.js
+```
+where `test/test.js` is the path of the file.
+
+You have the flexibility to write tests in quite a variety of ways, open to you to explore.
+
+**Note about default configuration with TAPE testing**: If you use the default configuration with Tape for testing, to get an improved CLI visual output (with colors! and accurate script exit codes), we recommend adjusting the command you use to run tests as follows:
+```
+hc test | test/node_modules/faucet/bin/cmd.js
+```
+
+
 ## Contribute
 Holochain is an open source project.  We welcome all sorts of participation and are actively working on increasing surface area to accept it.  Please see our [contributing guidelines](https://github.com/holochain/org/blob/master/CONTRIBUTING.md) for our general practices and protocols on participating in the community.
 
