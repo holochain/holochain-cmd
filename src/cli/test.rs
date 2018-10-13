@@ -40,7 +40,6 @@ pub fn test(path: &PathBuf, tests_folder: &str, testfile: &str, skip_npm: bool) 
         // npm install, if no node_modules yet
         let node_modules_path = tests_path.join("node_modules");
         if !node_modules_path.exists() {
-            // execute the built test file using holoconsole
             println!("{}", "Installing node_modules".green().bold());
             util::run_cmd(tests_path.clone(), "npm".to_string(), vec![
                 "install".to_string(),
@@ -60,13 +59,13 @@ pub fn test(path: &PathBuf, tests_folder: &str, testfile: &str, skip_npm: bool) 
         ])?;
     }
 
-    // execute the built test file using holoconsole
+    // execute the built test file using hcshell
     println!(
         "{} tests in {}",
         "Running".green().bold(),
         testfile,
     );
-    util::run_cmd(path.to_path_buf(), "holoconsole".to_string(), vec![
+    util::run_cmd(path.to_path_buf(), "hcshell".to_string(), vec![
         testfile.to_string(),
     ])?;
 
@@ -129,7 +128,7 @@ pub mod tests {
 
         let result = test(&temp_dir_path_buf, &TEST_DIR_NAME, "test/dist/index.js", true);
 
-        // is err because "holoconsole test/dist/index.js" will have failed
+        // is err because "hcshell test/dist/index.js" will have failed
         // but the important thing is that the npm calls weren't made
         assert!(result.is_err());
         // check success of packaging step
