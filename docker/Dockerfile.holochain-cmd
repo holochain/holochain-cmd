@@ -1,7 +1,8 @@
 FROM holochain/holochain-rust:develop
 
 RUN apt-get update && apt-get install --yes \
-  qtdeclarative5-dev
+  qtdeclarative5-dev \
+  libqt5websockets5-dev
 
 USER root
 
