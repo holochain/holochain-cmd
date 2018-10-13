@@ -1,2 +1,2 @@
 #!/bin/bash
-docker build -f docker/Dockerfile.holochain-cmd -t holochain/holochain-cmd:holoconsole-to-hcshell "$@" .
+docker build -f docker/Dockerfile.holochain-cmd -t holochain/holochain-cmd:latest "$@" .
