@@ -8,7 +8,7 @@ This repo provides a set of tools for building and running Holochain genomes fro
 
 ## Install
 
-Dependencies:
+These dependencies need to be installed in order to compile, and use `holochain-cmd`:
 
 - [Rust](https://www.rust-lang.org/en-US/install.html)
   - needs to be the `nightly` build, so use the following commands, once you have first installed Rust
@@ -33,7 +33,7 @@ Run `hc help` for help.
 
 ## Usage
 
-`(u)` means the command is as-yet unimplemented.
+`(u)` means the command is not yet implemented.
 
 | Command   | Use                                                                 |
 |-----------|---------------------------------------------------------------------|
