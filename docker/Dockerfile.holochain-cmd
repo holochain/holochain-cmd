@@ -1,7 +1,8 @@
 FROM holochain/holochain-rust:develop
 
 RUN apt-get update && apt-get install --yes \
-  qtdeclarative5-dev
+  qtdeclarative5-dev \
+  libqt5websockets5-dev
 
 USER root
 
@@ -14,7 +15,7 @@ WORKDIR /holochain
 RUN git clone https://github.com/holochain/holosqape
 
 ENV USER root
-ENV PATH "/holochain/holosqape/holoconsole:$PATH"
+ENV PATH "/holochain/holosqape/hcshell:$PATH"
 
 WORKDIR /holochain/holosqape
 RUN git submodule init
@@ -25,7 +26,7 @@ RUN cargo +$TOOLS_NIGHTLY build --release
 WORKDIR /holochain/holosqape/bindings
 RUN qmake
 RUN make
-WORKDIR /holochain/holosqape/holoconsole
+WORKDIR /holochain/holosqape/hcshell
 RUN qmake CONFIG+=release
 RUN make
 

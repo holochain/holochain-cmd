@@ -20,7 +20,7 @@ cd /holochain/holosqape/bindings
 qmake
 make
 
-echo "COMPILING HOLOCONSOLE"
-cd /holochain/holosqape/holoconsole
+echo "COMPILING hcshell"
+cd /holochain/holosqape/hcshell
 qmake CONFIG+=release
 make
