@@ -161,6 +161,11 @@ Once you have a project folder initiated, you can run `hc test` to execute your 
 
 `hc test` also has some configurable options.
 
+If you want to run it without repackaging the DNA, run it with
+```shell
+hc test --no-package
+```
+
 If you want to run it without running the `npm` commands, run it with
 ```shell
 hc test --skip-npm
