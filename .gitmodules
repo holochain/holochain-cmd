@@ -1,0 +1,4 @@
+[submodule "js-tests-scaffold"]
+	path = src/cli/js-tests-scaffold
+	url = https://github.com/holochain/js-tests-scaffold.git
+	branch = master
