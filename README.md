@@ -4,11 +4,11 @@
 [![PM](https://img.shields.io/badge/pm-waffle-blue.svg?style=flat-square)](https://waffle.io/holochain/org)
 [![Chat](https://img.shields.io/badge/chat-chat%2eholochain%2enet-blue.svg?style=flat-square)](https://chat.holochain.net)
 
-This repo provides a set of tools for building and running Holochain genomes from the command line. The tools are written in Rust, and delivered as binary executables.
+This repo provides a set of tools for building and running Holochain DNA from the command line. The tools are written in Rust, and delivered as binary executables.
 
 ## Install
 
-Dependencies:
+These dependencies need to be installed in order to compile, and use `holochain-cmd`:
 
 - [Rust](https://www.rust-lang.org/en-US/install.html)
   - needs to be the `nightly` build, so use the following commands, once you have first installed Rust
@@ -33,17 +33,17 @@ Run `hc help` for help.
 
 ## Usage
 
-`(u)` means the command is as-yet unimplemented.
+`(u)` means the command is not yet implemented.
 
 | Command   | Use                                                                 |
 |-----------|---------------------------------------------------------------------|
-| agent (u) | Starts a Holochain node as an agent                                 |
-| generate  | Generates a new zome and scaffolds the given capabilities           |
 | init      | Initializes a new Holochain app at the given directory              |
-| package   | Builds the current Holochain app into a `.hcpkg` file               |
+| generate  | Generates a new Zome                                                |
+| package   | Builds the current Holochain app into a `.dna.json` file            |
 | unpack    | Unpacks a Holochain bundle into its original file system structure  |
 | test      | Runs tests written in the test folder                               |
 | web (u)   | Starts a web server for the current Holochain app                   |
+| agent (u) | Starts a Holochain node as an agent                                 |
 
 ## How To Get Started Building An App
 
@@ -66,7 +66,7 @@ What this did is generate a new folder under `zomes` called `users`. Here is the
 - users
   - code
     - src
-      - main.rs
+      - lib.rs
     - .build
     - Cargo.toml
   - zome.json
@@ -77,32 +77,32 @@ So in a given Zome we have two things:
 
 In order for Holochain to run your app, you have to build your code into a single packaged file. Those instructions follow.
 
-## What are .hcpkg files?
+## What are .dna.json files?
 
-A Holochain app can be fully contained in a file known as a `.hcpkg` file.
+A Holochain app can be fully contained in a file known as a `.dna.json` file.
 It is a JSON file, with a particular structure that Holochain can understand, and execute.
 
 This is an unusual JSON file; it is part configuration, and part executable.
 
-The configuration part comes from the `json` files that are throughout your app. One at the top level for the application (`app.json`) and one for each Zome. Ultimately, these get stitched together into a single tree structure in the `.hcpkg` file.
+The configuration part comes from the `json` files that are throughout your app. One at the top level for the application (`app.json`) and one for each Zome. Ultimately, these get stitched together into a single tree structure in the `.dna.json` file.
 
 The executable part comes from having embedded Base64 encoded WebAssembly code in the file. *What does that mean?* [WebAssembly](https://webassembly.org/) is a fast and secure low-level language.
 Rather than storing the code in its ugly raw WASM bytecode format, Holochain expects the code to be [encoded using Base64](https://en.wikipedia.org/wiki/Base64) , for legibility and simplicity reasons.
 
 If you haven't heard of WebAssembly (WASM for short), that's ok. Important to know is that WASM is intended as a "compilation target" for other languages, not a language to write code in. So instead of writing code in WASM, write code in a language that's familiar to you, and [supports WASM](https://github.com/appcypher/awesome-wasm-langs). When it's time to run your code in Holochain, compile it.
 
-In order to avoid having to handcraft this complex JSON structure, with lots of room for error, the `hc package` command streamlines the process of taking your "raw" application folder, and packaging it up into the final `.hcpkg` file.
+In order to avoid having to handcraft this complex JSON structure, with lots of room for error, the `hc package` command streamlines the process of taking your "raw" application folder, and packaging it up into the final `.dna.json` file.
 
 More information about this follows.
 
 ## Using Built-in Compilation
 
-The `hc package` tool will automate the process of compiling your Zome code, encoding it, and inserting into the `.hcpkg` file. In order to get these benefits, you just need to make sure that you have the right compilation tools installed on the machine you are using the command line tools from, and that you have the proper configuration files in your Zome folders.
+The `hc package` tool will automate the process of compiling your Zome code, encoding it, and inserting into the `.dna.json` file. In order to get these benefits, you just need to make sure that you have the right compilation tools installed on the machine you are using the command line tools from, and that you have the proper configuration files in your Zome folders.
 
 `hc package` works with two special files called `.hcignore` files and `.build` files.
 
 ### .build files
-In the process of building a `.hcpkg` file, here is what Holochain does.
+In the process of building a `.dna.json` file, here is what Holochain does.
 - It iterates Zome by Zome adding them to the JSON
 - For each Zome, it looks for any folders containing a `.build` file
 - For any folder with a `.build` file, it executes one or more commands from the `.build` file to create a WASM file
@@ -126,7 +126,7 @@ The two top level properties are `steps` and `artifact`. `steps` is a list of co
 
 ### Ignoring using .hcignore files
 
-Sometimes, you'll want to exclude files and folders in your project directory to get a straight `.hcpkg` file that can be understood by Holochain. In order to do that, just create a `.hcignore` file. It has a similar structure to `.gitignore` files:
+Sometimes, you'll want to exclude files and folders in your project directory to get a straight `.dna.json` file that can be understood by Holochain. In order to do that, just create a `.hcignore` file. It has a similar structure to `.gitignore` files:
 
 ```
 README.md
@@ -146,7 +146,7 @@ $ rustup default nightly # switch to the nightly rust toolchain as your default
 
 Once that's done, you should be able to run commands like `cargo build --target=wasm32-unknown-unknown` and have it work.
 
-Once all of this is set up, you can build and run your `.hcpkg` file with Holochain!
+Once all of this is set up, you can build and run your `.dna.json` file with Holochain!
 
 ### Writing and Running Tests
 By default, when you use `hc init` to create a new project folder, it creates a sub-directory called `test`. The files in that folder are equipped for testing your project. 
