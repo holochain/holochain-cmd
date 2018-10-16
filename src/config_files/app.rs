@@ -27,7 +27,7 @@ impl Default for App {
             version: Version::new(0, 1, 0),
             authors: vec![Author {
                 indentifier: "Author Name <author@name.com>".into(),
-                public_key_source: "http://eric.harris-braun.com/pk".into(),
+                public_key_source: "".into(),
                 signature: "".into(),
             }],
             dht: Dht {},
