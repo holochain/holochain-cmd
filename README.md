@@ -24,6 +24,8 @@ To install the Holochain command line, run the following commands in a terminal
 ```shell
 $ git clone https://github.com/holochain/holochain-cmd.git
 $ cd holochain-cmd
+$ git submodule init
+$ git submodule update
 $ cargo install -f --path .
 ```
 
