@@ -17,7 +17,7 @@ These dependencies need to be installed in order to compile, and use `holochain-
   - Also, if you are going to be developing Zomes in Rust, install the WASM build target for Rust, by running:
   - `rustup target add wasm32-unknown-unknown --toolchain nightly`
 - [Node.js](https://nodejs.org) (needed for running tests)
-- [hcshell](https://github.com/holochain/holosqape) (also needed for running tests, hcshell is currently installed as part of holosqape)
+- [hcshell](https://github.com/holochain/holosqape#hcshell) (also needed for running tests, hcshell is currently installed as part of holosqape)
 
 
 To install the Holochain command line, run the following commands in a terminal
@@ -159,7 +159,7 @@ Once you have a project folder initiated, you can run `hc test` to execute your 
   1. Packaging your files into a DNA file, located at `dist/bundle.json`. This step will fail if your packaging step fails.
   2. Installing build and testing dependencies, if they're not installed (`npm install`)
   3. Building a single JS file used for testing, placed at `test/dist/bundle.js` (`npm run build`)
-  4. Executing (with [hcshell](https://github.com/holochain/holosqape)) the test file found at `test/dist/bundle.js`
+  4. Executing (with [hcshell](https://github.com/holochain/holosqape#hcshell)) the test file found at `test/dist/bundle.js`
 
 `hc test` also has some configurable options.
 
