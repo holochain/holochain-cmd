@@ -52,7 +52,7 @@ impl Scaffold for RustScaffold {
         // Also, caution, if hdk-rust switches to git flow style and "develop" branch, and
         // the above TODO hasn't been addressed, this should also be updated
         let hdk_dep: &str =
-            "hdk = { git = \"https://github.com/holochain/hdk-rust\", branch = \"master\" }";
+            "hdk = { git = \"https://github.com/holochain/holochain-rust\", branch = \"develop\" }";
 
         cargo_file.write_all(hdk_dep.as_bytes())?;
 
