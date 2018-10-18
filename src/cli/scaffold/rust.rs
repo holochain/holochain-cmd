@@ -1,9 +1,7 @@
 use cli::{package, scaffold::Scaffold};
-use colored::*;
 use config_files::Build;
 use error::DefaultResult;
 use std::{
-    collections::BTreeMap,
     fs::{self, OpenOptions},
     io::Read,
     io::Write,
@@ -25,67 +23,59 @@ pub struct RustScaffold {
     build_template: Build,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Deserialize, Debug)]
 struct CargoPackage {
-    name: String,
-    version: String,
     authors: Vec<String>,
     edition: String
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-struct CargoLib {
-    path: String,
-    #[serde(rename="crate-type")]
-    crate_type: Vec<String>
-}
-
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Deserialize, Debug)]
 struct CargoFile {
     package: CargoPackage,
-    #[serde(serialize_with = "toml::ser::tables_last")]
-    dependencies: toml::value::Table,
-    lib: Option<CargoLib>
 }
 
-fn toml_string(s: &str) -> toml::value::Value {
-    toml::value::Value::String(s.to_string())
-}
-
+/// Modify Cargo.toml in place, using pieces of the original
 fn rewrite_cargo_toml(cargo_file_path: &Path) -> DefaultResult<()> {
-    let mut cargo_file = OpenOptions::new().read(true).write(true).open(cargo_file_path)?;
+    let mut cargo_file = OpenOptions::new()
+        .read(true).write(true).open(cargo_file_path)?;
     let mut contents = String::new();
     cargo_file.read_to_string(&mut contents)?;
-    let new_toml = flesh_out_cargo_toml(contents.as_str())
-        .expect("Couldn't parse Cargo.toml");
-    cargo_file.seek(SeekFrom::Start(0));
-    // let mut new_cargo_file = OpenOptions::new().write(true).open(cargo_file_path)?;
-    cargo_file.write_all(new_toml.as_bytes());
-    Ok(())
 
+    // create new Cargo.toml using pieces of the original
+    let new_toml = flesh_out_cargo_toml(contents.as_str())?;
+    cargo_file.seek(SeekFrom::Start(0))?;
+    cargo_file.write_all(new_toml.as_bytes())?;
+    Ok(())
 }
-fn flesh_out_cargo_toml(contents: &str) -> Result<String, toml::ser::Error> {
-    let mut config: CargoFile = toml::from_str(contents)
-        .expect("Couldn't parse Cargo.toml");
-    let deps: BTreeMap<String, Value> = btreemap! {
-        "serde".to_string() => toml_string("1.0"),
-        "serde_json".to_string() => toml_string("1.0"),
-        "serde_derive".to_string() => toml_string("1.0"),
-        "hdk".to_string() => Value::Table(btreemap! {
-            "git".to_string() => toml_string("https://github.com/holochain/hdk-rust")
-        }),
-        "holochain_wasm_utils".to_string() => Value::Table(btreemap! {
-            "git".to_string() => toml_string("https://github.com/holochain/holochain-rust"),
-            "branch".to_string() => toml_string("develop")
-        })
-    };
-    let lib = CargoLib {
-        path: "src/lib.rs".to_string(),
-        crate_type: vec!["cdylib".to_string()]
-    };
-    config.dependencies = deps.into();
-    config.lib = Some(lib);
-    toml::to_string(&config)
+
+/// Use the Cargo.toml.template file and interpolate values into the placeholders
+fn interpolate_cargo_template(authors: &Value, edition: &Value) -> DefaultResult<String> {
+    let authors = toml::to_string(authors)?;
+    let edition = toml::to_string(edition)?;
+    let template = include_str!("rust/Cargo.toml.template");
+    Ok(
+        template
+        .replace("<<AUTHORS>>", authors.as_str())
+        .replace("<<EDITION>>", edition.as_str())
+    )
+}
+
+/// Given existing Cargo.toml string, pull out some values and return a new
+/// string with values pulled from template
+fn flesh_out_cargo_toml(contents: &str) -> DefaultResult<String> {
+    let config: Value = toml::from_str(contents)?;
+
+    let authors_default = Value::from("[\"TODO\"]");
+    let edition_default = Value::from("\"TODO\"");
+    let maybe_package = config.get("package");
+    let authors = maybe_package
+        .and_then(|p| p.get("authors"))
+        .unwrap_or(&authors_default);
+    let edition = maybe_package
+        .and_then(|p| p.get("edition"))
+        .unwrap_or(&edition_default);
+
+    interpolate_cargo_template(authors, edition)
 }
 
 impl RustScaffold {
@@ -116,13 +106,13 @@ impl Scaffold for RustScaffold {
             ],
         ).expect("Couldn't initialize zome with cargo init");
 
-        // add hdk-rust dependency by default
+        // immediately rewrite the generated Cargo file, using some values
+        // and throwing away the rest
         let cargo_file_path = base_path.as_ref().join(CARGO_FILE_NAME);
-        rewrite_cargo_toml(&cargo_file_path).expect("OK?");
+        rewrite_cargo_toml(&cargo_file_path)?;
 
         // create and fill in a build file appropriate for Rust
         let build_file_path = base_path.as_ref().join(package::BUILD_CONFIG_FILE_NAME);
-
         self.build_template.save_as(build_file_path)?;
 
         Ok(())
