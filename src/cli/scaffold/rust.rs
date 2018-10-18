@@ -23,17 +23,6 @@ pub struct RustScaffold {
     build_template: Build,
 }
 
-#[derive(Deserialize, Debug)]
-struct CargoPackage {
-    authors: Vec<String>,
-    edition: String
-}
-
-#[derive(Deserialize, Debug)]
-struct CargoFile {
-    package: CargoPackage,
-}
-
 /// Modify Cargo.toml in place, using pieces of the original
 fn rewrite_cargo_toml(cargo_file_path: &Path) -> DefaultResult<()> {
     let mut cargo_file = OpenOptions::new()
@@ -104,7 +93,7 @@ impl Scaffold for RustScaffold {
                 "--vcs".to_owned(),
                 "none".to_owned(),
             ],
-        ).expect("Couldn't initialize zome with cargo init");
+        )?;
 
         // immediately rewrite the generated Cargo file, using some values
         // and throwing away the rest
