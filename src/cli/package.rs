@@ -240,7 +240,6 @@ fn unpack_recurse(mut obj: Object, to: &PathBuf) -> DefaultResult<()> {
 mod tests {
     use super::*;
     use assert_cmd::prelude::*;
-    use dir_diff;
     use std::process::Command;
     use tempfile::{Builder, TempDir};
 
