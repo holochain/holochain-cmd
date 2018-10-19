@@ -95,7 +95,8 @@ impl Packager {
 
             let json_file = fs::read_to_string(json_file_path)?;
 
-            serde_json::from_str(&json_file)?
+            // if the json file does not contain an Object at the top level, we can't parse it
+            serde_json::from_str(&json_file).unwrap_or_default()
         } else {
             Object::new()
         };
@@ -106,7 +107,8 @@ impl Packager {
         for node in all_nodes {
             let file_name = util::file_name_string(&node)?;
 
-            if node.is_file() {
+            // ignore empty main_tree, which results from an unparseable JSON file
+            if node.is_file() && !main_tree.is_empty() {
                 meta_tree.insert(file_name.clone(), META_FILE_ID.into());
 
                 let mut buf = Vec::new();
@@ -238,7 +240,6 @@ fn unpack_recurse(mut obj: Object, to: &PathBuf) -> DefaultResult<()> {
 mod tests {
     use super::*;
     use assert_cmd::prelude::*;
-    use dir_diff;
     use std::process::Command;
     use tempfile::{Builder, TempDir};
 

@@ -30,8 +30,8 @@ impl AssemblyScriptScaffold {
 impl Scaffold for AssemblyScriptScaffold {
     fn gen<P: AsRef<Path>>(&self, base_path: P) -> DefaultResult<()> {
         fs::create_dir_all(&base_path)?;
-        
-        // use npm to initialise a nodejs project 
+
+        // use npm to initialise a nodejs project
         util::run_cmd(
             base_path.as_ref().to_path_buf(),
             "npm".into(),

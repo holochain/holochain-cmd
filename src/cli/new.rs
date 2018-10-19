@@ -52,7 +52,12 @@ pub fn new(path: &PathBuf, _from: &Option<String>) -> DefaultResult<()> {
     serde_json::to_writer_pretty(app_config_file, &AppConfig::default())?;
 
     // create a default .hcignore file with good defaults
-    let ignores = format!("{}\n{}\n{}\n{}\n", &DIST_DIR_NAME, &TEST_DIR_NAME, "README.md", &DEFAULT_BUNDLE_FILE_NAME);
+    let ignores = [
+        &DIST_DIR_NAME,
+        &TEST_DIR_NAME,
+        &DEFAULT_BUNDLE_FILE_NAME,
+        "README.md"
+    ].join("\n");
     let mut hcignore_file = File::create(path.join(&IGNORE_FILE_NAME))?;
     hcignore_file.write_all(ignores.as_bytes())?;
 
@@ -88,7 +93,7 @@ pub mod tests {
         // this test is deterministic
         let dir = gen_dir();
         let dir_path_buf = &dir.path().to_path_buf();
-        setup_test_folder(dir_path_buf, &TEST_DIR_NAME);
+        setup_test_folder(dir_path_buf, &TEST_DIR_NAME).expect("Test folder not set up");
 
         assert!(dir_path_buf.join(&TEST_DIR_NAME).join("index.js").exists());
         assert!(dir_path_buf.join(&TEST_DIR_NAME).join("package.json").exists());
