@@ -3,10 +3,7 @@ use config_files::Build;
 use error::DefaultResult;
 use std::{
     fs::{self, OpenOptions},
-    io::Read,
-    io::Write,
-    io::Seek,
-    io::SeekFrom,
+    io::{Read, Write, Seek, SeekFrom},
     path::Path,
 };
 use toml::{
