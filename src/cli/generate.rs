@@ -35,11 +35,17 @@ pub fn generate(zome_name: &PathBuf, language: &str) -> DefaultResult<()> {
 
     let code_dir = zome_name.join(CODE_DIR_NAME);
     fs::create_dir_all(&code_dir)?;
+    let zome_name_string = zome_name.to_str()
+        .expect("Invalid zome path given")
+        .to_string()
+        .replace("/", "_")
+        .replace("zomes_", "");
 
     // match against all supported languages
     match language {
-        "rust" => scaffold(&scaffold::rust::RustScaffold::new(), code_dir)?,
+        "rust" => scaffold(&scaffold::rust::RustScaffold::new(zome_name_string), code_dir)?,
         "assemblyscript" => scaffold(&scaffold::assemblyscript::AssemblyScriptScaffold::new(), code_dir)?,
+        // TODO: supply zome name for AssemblyScriptScaffold as well
         _ => bail!("unsupported language: {}", language),
     }
 

@@ -18,30 +18,7 @@ pub const CARGO_FILE_NAME: &str = "Cargo.toml";
 
 pub struct RustScaffold {
     build_template: Build,
-}
-
-/// Modify Cargo.toml in place, using pieces of the original
-fn rewrite_cargo_toml(base_path: &Path) -> DefaultResult<()> {
-    let cargo_file_path = base_path.join(CARGO_FILE_NAME);
-    let mut cargo_file = OpenOptions::new()
-        .read(true).write(true).open(cargo_file_path)?;
-    let mut contents = String::new();
-    cargo_file.read_to_string(&mut contents)?;
-
-    // create new Cargo.toml using pieces of the original
-    let zome_name = get_zome_name(base_path);
-    let new_toml = generate_cargo_toml(zome_name.as_str(), contents.as_str())?;
-    cargo_file.seek(SeekFrom::Start(0))?;
-    cargo_file.write_all(new_toml.as_bytes())?;
-    Ok(())
-}
-
-/// Assuming the base_path is at `[zomename]/code`, get the zome name
-fn get_zome_name(base_path: &Path) -> String {
-    base_path.parent()
-        .and_then(|p| p.to_str())
-        .unwrap_or("myzome")
-        .replace("/", "-")
+    package_name: String,
 }
 
 /// Given existing Cargo.toml string, pull out some values and return a new
@@ -65,6 +42,7 @@ fn generate_cargo_toml(name: &str, contents: &str) -> DefaultResult<String> {
 }
 
 /// Use the Cargo.toml.template file and interpolate values into the placeholders
+/// TODO: consider using an actual templating engine such as https://github.com/Keats/tera
 fn interpolate_cargo_template(name: &Value, authors: &Value, edition: &Value) -> DefaultResult<String> {
     let template = include_str!("rust/Cargo.template.toml");
     Ok(
@@ -76,14 +54,31 @@ fn interpolate_cargo_template(name: &Value, authors: &Value, edition: &Value) ->
 }
 
 impl RustScaffold {
-    pub fn new() -> RustScaffold {
+    pub fn new(package_name: String) -> RustScaffold {
+        let artifact_name = format!("target/wasm32-unknown-unknown/release/{}.wasm", package_name);
         RustScaffold {
-            build_template: Build::with_artifact("target/wasm32-unknown-unknown/release/code.wasm")
+            build_template: Build::with_artifact(artifact_name)
                 .cmd(
                     "cargo",
                     &["build", "--release", "--target=wasm32-unknown-unknown"],
                 ),
+            package_name: package_name,
         }
+    }
+
+    /// Modify Cargo.toml in place, using pieces of the original
+    fn rewrite_cargo_toml(&self, base_path: &Path) -> DefaultResult<()> {
+        let cargo_file_path = base_path.join(CARGO_FILE_NAME);
+        let mut cargo_file = OpenOptions::new()
+            .read(true).write(true).open(cargo_file_path)?;
+        let mut contents = String::new();
+        cargo_file.read_to_string(&mut contents)?;
+
+        // create new Cargo.toml using pieces of the original
+        let new_toml = generate_cargo_toml(self.package_name.as_str(), contents.as_str())?;
+        cargo_file.seek(SeekFrom::Start(0))?;
+        cargo_file.write_all(new_toml.as_bytes())?;
+        Ok(())
     }
 }
 
@@ -105,7 +100,7 @@ impl Scaffold for RustScaffold {
 
         // immediately rewrite the generated Cargo file, using some values
         // and throwing away the rest
-        rewrite_cargo_toml(base_path.as_ref())?;
+        self.rewrite_cargo_toml(base_path.as_ref())?;
 
         // create and fill in a build file appropriate for Rust
         let build_file_path = base_path.as_ref().join(package::BUILD_CONFIG_FILE_NAME);
