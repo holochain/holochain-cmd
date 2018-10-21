@@ -1,6 +1,7 @@
 use colored::*;
 use config_files::App as AppConfig;
 use cli::package::{
+    GITIGNORE_FILE_NAME,
     IGNORE_FILE_NAME,
     DEFAULT_BUNDLE_FILE_NAME
 };
@@ -34,7 +35,7 @@ fn setup_test_folder(path: &PathBuf, test_folder: &str) -> DefaultResult<()> {
     Ok(())
 }
 
-pub fn new(path: &PathBuf, _from: &Option<String>) -> DefaultResult<()> {
+pub fn init(path: &PathBuf) -> DefaultResult<()> {
     if !path.exists() {
         fs::create_dir_all(&path)?;
     } else {
@@ -48,8 +49,15 @@ pub fn new(path: &PathBuf, _from: &Option<String>) -> DefaultResult<()> {
     // create empty zomes folder
     fs::create_dir_all(path.join("zomes"))?;
 
+    // create base DNA json config
     let app_config_file = File::create(path.join("app.json"))?;
     serde_json::to_writer_pretty(app_config_file, &AppConfig::default())?;
+
+    // create a default .gitignore file with good defaults
+    let gitignore_file_path = path.join(GITIGNORE_FILE_NAME);
+    let mut gitignore_file = OpenOptions::new().write(true).create(true).open(gitignore_file_path)?;
+    let gitignore_starter = include_str!("git-scaffold/.gitignore");
+    gitignore_file.write_all(gitignore_starter.as_bytes())?;
 
     // create a default .hcignore file with good defaults
     let ignores = [
@@ -61,6 +69,7 @@ pub fn new(path: &PathBuf, _from: &Option<String>) -> DefaultResult<()> {
     let mut hcignore_file = File::create(path.join(&IGNORE_FILE_NAME))?;
     hcignore_file.write_all(ignores.as_bytes())?;
 
+    // create a test folder with useful files
     setup_test_folder(&path, &TEST_DIR_NAME)?;
 
     println!(
@@ -75,7 +84,6 @@ pub fn new(path: &PathBuf, _from: &Option<String>) -> DefaultResult<()> {
 #[cfg(test)]
 pub mod tests {
     use super::*;
-    use cli::test::TEST_DIR_NAME;
     use tempfile::{Builder, TempDir};
 
     const HOLOCHAIN_TEST_PREFIX: &str = "org.holochain.test";
@@ -88,9 +96,20 @@ pub mod tests {
     }
 
     #[test]
+    fn init_test() {
+        let dir = gen_dir();
+        let dir_path_buf = &dir.path().to_path_buf();
+        init(dir_path_buf);
+
+        assert!(dir_path_buf.join("zomes").exists());
+        assert!(dir_path_buf.join("app.json").exists());
+        assert!(dir_path_buf.join(IGNORE_FILE_NAME).exists());
+        assert!(dir_path_buf.join(GITIGNORE_FILE_NAME).exists());
+        assert!(dir_path_buf.join(TEST_DIR_NAME).exists());
+    }
+
+    #[test]
     fn setup_test_folder_test() {
-        // because we pass the commit as well
-        // this test is deterministic
         let dir = gen_dir();
         let dir_path_buf = &dir.path().to_path_buf();
         setup_test_folder(dir_path_buf, &TEST_DIR_NAME).expect("Test folder not set up");
