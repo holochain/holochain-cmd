@@ -99,8 +99,9 @@ pub mod tests {
     fn init_test() {
         let dir = gen_dir();
         let dir_path_buf = &dir.path().to_path_buf();
-        init(dir_path_buf);
+        let result = init(dir_path_buf);
 
+        assert!(result.is_ok());
         assert!(dir_path_buf.join("zomes").exists());
         assert!(dir_path_buf.join("app.json").exists());
         assert!(dir_path_buf.join(IGNORE_FILE_NAME).exists());
