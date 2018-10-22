@@ -6,6 +6,7 @@ extern crate failure;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
+extern crate toml;
 extern crate assert_cmd;
 extern crate base64;
 extern crate colored;
