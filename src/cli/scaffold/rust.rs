@@ -82,7 +82,7 @@ impl RustScaffold {
         Ok(())
     }
 
-    /// Modify Cargo.toml in place, using pieces of the original
+    /// Completely rewrite src/lib.rs with custom scaffold file
     fn rewrite_lib_rs(&self, base_path: &Path) -> DefaultResult<()> {
         let file_path = base_path.join(LIB_RS_PATH);
         let mut cargo_file = OpenOptions::new()
