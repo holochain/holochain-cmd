@@ -3,6 +3,12 @@ use colored::*;
 use config_files::Build;
 use error::DefaultResult;
 use ignore::WalkBuilder;
+use holochain_core::{
+    nucleus::{
+        ribosome, ZomeFnCall,
+    },
+};
+use cli::test_context::test_context;
 use serde_json::{self, Map, Value};
 use std::{
     fs::{self, File},
@@ -130,6 +136,26 @@ impl Packager {
                     let build = Build::from_file(build_config)?;
 
                     let wasm = build.run(&node)?;
+
+                    base64::decode(&wasm).ok().and_then(|wasm_binary| {
+                        let context= test_context("HC");
+                        let result = ribosome::run_dna(
+                            &"HC",
+                            context,
+                            wasm_binary,
+                            &ZomeFnCall::new(&"", &"", &"__hdk_get_json_definition", &""),
+                            Some(String::from("{}").into_bytes())
+                        );
+                        println!("RESULT: {:?}", result);
+                        result.ok()
+                    }).and_then(|call_result| {
+                        println!("WASM2JSON: {}", call_result);
+                        serde_json::from_str(&call_result).ok()
+                    }).and_then(|json_from_wasm| {
+                        let parent_filename= util::file_name_string(&node.parent().unwrap().to_path_buf()).unwrap();
+                        main_tree.insert(parent_filename, json_from_wasm)
+                    });
+
 
                     main_tree.insert(file_name.clone(), json!({ "code": wasm }));
                 } else {
