@@ -36,7 +36,7 @@ pub fn test_context(agent_name: &str) -> Arc<Context> {
         Context::new(
             agent,
             logger.clone(),
-            Arc::new(Mutex::new(SimplePersister::new())),
+            Arc::new(Mutex::new(SimplePersister::new(agent_name.to_string()))),
             FilesystemStorage::new(tempdir().unwrap().path().to_str().unwrap()).unwrap(),
             EavFileStorage::new(tempdir().unwrap().path().to_str().unwrap().to_string())
                 .unwrap(),
