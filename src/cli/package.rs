@@ -142,7 +142,16 @@ impl Packager {
 
                     let wasm_binary = base64::decode(&wasm)?;
 
+                    // Instantiating WASM and calling function to get JSON:
+                    // ribosome::run_dna is the WASM run-time imported from Holochain core.
+                    // We need to setup a shallow test context which actually is not needed
+                    // here so it doesn't matter what is in there.
+                    // TODO: extract core of run_dna() into a function that does not need a context
                     let context= test_context("HC");
+                    // We just call into __hdk_get_json_definition() without any arguments.
+                    // What we get back is a JSON string with all the entry types and zome functions
+                    // defined in that WASM code, constructed through our Rust macros define_zome!
+                    // and entry!.
                     let call_result = ribosome::run_dna(
                         &"HC",
                         context,
