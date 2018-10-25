@@ -154,7 +154,7 @@ impl Packager {
                         context,
                         wasm_binary,
                         &ZomeFnCall::new(&"", &"", &"__hdk_get_json_definition", &""),
-                        Some(String::from("{}").into_bytes())
+                        Some("{}".as_bytes().to_vec())
                     )?;
                     let json_from_wasm: Map<String, Value> = serde_json::from_str(&call_result)?;
 
