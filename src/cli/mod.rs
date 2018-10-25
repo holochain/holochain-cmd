@@ -5,6 +5,7 @@ mod package;
 mod scaffold;
 mod web;
 mod test;
+mod test_context;
 
 pub use self::agent::agent;
 pub use self::generate::generate;
