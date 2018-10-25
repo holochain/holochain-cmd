@@ -131,13 +131,7 @@ impl Packager {
                     .read_dir()?
                     .filter(|e| e.is_ok())
                     .map(|e| e.unwrap().path())
-                    .filter(|path| {
-                        let maybe_metadata = fs::metadata(path);
-                        match maybe_metadata {
-                            Ok(metadata) => metadata.is_dir(),
-                            Err(_) => false,
-                        }
-                    })
+                    .filter(|path| path.is_dir())
                     .find(|path| path.join(BUILD_CONFIG_FILE_NAME).exists())
                 {
                     meta_tree.insert(file_name.clone(), META_DIR_ID.into());
