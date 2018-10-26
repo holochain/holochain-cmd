@@ -71,22 +71,19 @@ What this did is generate a new folder under `zomes` called `users`. Here is the
       - lib.rs
     - .build
     - Cargo.toml
-  - zome.json
 
-So in a given Zome we have two things:
-1. a JSON file, `zome.json`, which defines and configures the Zome
-2. a `code` folder, which can be compiled into a single `WASM` file with the code for this Zome
+So in every Zome there must be a `code` folder, which can be compiled into a single `WASM` binary with the code for this Zome
 
 In order for Holochain to run your app, you have to build your code into a single packaged file. Those instructions follow.
 
 ## What are .dna.json files?
 
-A Holochain app can be fully contained in a file known as a `.dna.json` file.
+Holochain DNA can be fully contained in a file known as a `.dna.json` file.
 It is a JSON file, with a particular structure that Holochain can understand, and execute.
 
 This is an unusual JSON file; it is part configuration, and part executable.
 
-The configuration part comes from the `json` files that are throughout your app. One at the top level for the application (`app.json`) and one for each Zome. Ultimately, these get stitched together into a single tree structure in the `.dna.json` file.
+The configuration part comes from the `json` file at the top level of your source code.
 
 The executable part comes from having embedded Base64 encoded WebAssembly code in the file. *What does that mean?* [WebAssembly](https://webassembly.org/) is a fast and secure low-level language.
 Rather than storing the code in its ugly raw WASM bytecode format, Holochain expects the code to be [encoded using Base64](https://en.wikipedia.org/wiki/Base64) , for legibility and simplicity reasons.
