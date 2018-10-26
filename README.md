@@ -62,7 +62,7 @@ To do this, run the following, replacing `your_zome_name` with a name related to
 $ hc generate zomes/your_zome_name rust
 ```
 
-Currently, Zomes can be generated as `rust`, or as `assemblyscript`. `hc generate` scaffolds the files and config you need to get started. In the command above, we declared `rust` just to be explicit, even though it's the default language.
+Currently, Zomes can be generated as `rust`. In the future, you may be able to generate zomes in another language. `hc generate` scaffolds the files and config you need to get started. 
 
 What this did is generate a new folder under `zomes` called `users`. Here is the folder structure of it.
 - users
@@ -72,7 +72,11 @@ What this did is generate a new folder under `zomes` called `users`. Here is the
     - .build
     - Cargo.toml
 
-So in every Zome there must be a `code` folder, which can be compiled into a single `WASM` binary with the code for this Zome
+So in every Zome there must be a `code` folder, which can be compiled into a single `WASM` binary with the code for this Zome.
+
+Now that you have your Rust Zome, check out the two sources of documentation about writing Holochain DNA source code:
+1. https://holochain.github.io/holochain-rust
+2. https://holochain.github.io/rust-api/0.0.1/hdk
 
 In order for Holochain to run your app, you have to build your code into a single packaged file. Those instructions follow.
 
