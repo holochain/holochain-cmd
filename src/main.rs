@@ -1,3 +1,5 @@
+extern crate holochain_agent;
+extern crate holochain_cas_implementations;
 extern crate holochain_core;
 extern crate holochain_dna;
 extern crate structopt;
@@ -77,11 +79,6 @@ enum Cli {
     Init {
         #[structopt(parse(from_os_str))]
         path: PathBuf,
-        #[structopt(
-            long = "from",
-            help = "Specifies the hash of the DNA the new app should be scaffolded from"
-        )]
-        from: Option<String>,
     },
     #[structopt(
         name = "generate",
@@ -153,8 +150,8 @@ fn run() -> HolochainResult<()> {
         Cli::Unpack { path, to } => {
             cli::unpack(&path, &to).or_else(|err| Err(HolochainError::Default(err)))?
         }
-        Cli::Init { path, from } => {
-            cli::new(&path, &from).or_else(|err| Err(HolochainError::Default(err)))?
+        Cli::Init { path } => {
+            cli::init(&path).or_else(|err| Err(HolochainError::Default(err)))?
         }
         Cli::Generate { zome, language } => {
             cli::generate(&zome, &language).or_else(|err| Err(HolochainError::Default(err)))?

@@ -1,14 +1,15 @@
 mod agent;
 mod generate;
-mod new;
+mod init;
 mod package;
 mod scaffold;
 mod web;
 mod test;
+mod test_context;
 
 pub use self::agent::agent;
 pub use self::generate::generate;
-pub use self::new::new;
+pub use self::init::init;
 pub use self::package::{package, unpack};
 pub use self::web::web;
 pub use self::test::test;
