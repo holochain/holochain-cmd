@@ -18,4 +18,4 @@ docker run -h holochain \
   -v `pwd`:/holochain/holochain-cmd \
   -u root:root \
   -v $HOME/.cargo/registry:/home/holochain/.cargo/registry \
-  --rm -it holochain/holochain-cmd:latest ./holochain-cmd/docker/entry "$@"
+  --rm -it holochain/holochain-cmd:develop ./holochain-cmd/docker/entry "$@"
