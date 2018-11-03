@@ -63,10 +63,10 @@ $ cd your_app_name
 We now have the empty shell of a Holochain app. From here, we will want to generate at least one Zome.
 To do this, run the following, replacing `your_zome_name` with a name related to the functionality you wish to develop. For example: `users`.
 ```shell
-$ hc generate zomes/your_zome_name rust
+$ hc generate zomes/your_zome_name
 ```
 
-Currently, Zomes can be generated as `rust`. In the future, you may be able to generate zomes in another language. `hc generate` scaffolds the files and config you need to get started. 
+Currently, only Zomes written in Rust can be generated. In the future, you may be able to generate Zomes in another language. `hc generate` scaffolds the files and config you need to get started. 
 
 What this did is generate a new folder under `zomes` called `users`. Here is the folder structure of it.
 - users
