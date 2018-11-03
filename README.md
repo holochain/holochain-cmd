@@ -8,6 +8,10 @@ This repo provides a set of tools for building and running Holochain DNA from th
 
 ## Install
 
+Our recommended pattern for the installation of `hc` command line tools is to use the Developer Preview release that you can find here, along with its instructions: https://github.com/holochain/app-spec-rust/releases/tag/v0.0.1-dev-preview. Otherwise, you can proceed with the more complex instructions for building from source, below.
+
+### Building From Source
+
 These dependencies need to be installed in order to compile, and use `holochain-cmd`:
 
 - [Rust](https://www.rust-lang.org/en-US/install.html)
