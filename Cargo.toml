@@ -4,10 +4,10 @@ version = "0.0.1"
 authors = ["Holochain Core Dev Team <devcore@holochain.org>"]
 
 [dependencies]
-holochain_core = { git = "https://github.com/holochain/holochain-rust", branch = "develop" }
-holochain_dna = { git = "https://github.com/holochain/holochain-rust", branch = "develop" }
-holochain_agent = { git = "https://github.com/holochain/holochain-rust", branch = "develop" }
-holochain_cas_implementations = { git = "https://github.com/holochain/holochain-rust", branch = "develop" }
+holochain_core = { git = "https://github.com/holochain/holochain-rust", branch = "jsonstring" }
+holochain_dna = { git = "https://github.com/holochain/holochain-rust", branch = "jsonstring" }
+holochain_agent = { git = "https://github.com/holochain/holochain-rust", branch = "jsonstring" }
+holochain_cas_implementations = { git = "https://github.com/holochain/holochain-rust", branch = "jsonstring" }
 structopt = "0.2"
 failure = "^0.1"
 serde = "1.0"
