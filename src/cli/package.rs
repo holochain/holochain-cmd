@@ -155,7 +155,7 @@ impl Packager {
                         &ZomeFnCall::new("", "", "__hdk_get_json_definition", ""),
                         Some("{}".as_bytes().to_vec()),
                     )?;
-                    let json_from_wasm: Map<String, Value> = serde_json::from_str(&call_result)?;
+                    let json_from_wasm: Map<String, Value> = serde_json::from_str(&call_result.to_string())?;
 
                     let mut sub_tree_content = self.bundle_recurse(&node)?;
                     for key in json_from_wasm.keys() {
