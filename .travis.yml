@@ -1,7 +1,7 @@
 jobs:
   include:
     - stage: "All"
-      name: "Linux Tests"
+      name: "Docker Tests"
       dist: trusty
       services:
         - docker
@@ -11,7 +11,8 @@ jobs:
     - name: "windows build"
       os: windows
       language: rust
-      rust: nightly
+      rust: nightly-2018-10-12-x86_64-pc-windows-msvc
       script:
+      - rustup target add wasm32-unknown-unknown --toolchain nightly-2018-10-12-x86_64-pc-windows-msvc
       - cargo build --verbose --all
       - cargo test --verbose --all
