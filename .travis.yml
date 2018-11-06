@@ -1,12 +1,17 @@
-services:
-  - docker
-
-dist: trusty
-
 jobs:
   include:
     - stage: "All"
-      name: "Tests"
+      name: "Linux Tests"
+      dist: trusty
+      services:
+        - docker
       install: docker pull holochain/holochain-cmd:develop
       script:
         - . docker/run-ci
+    - name: "windows build"
+      os: windows
+      language: rust
+      rust: nightly
+      script:
+      - cargo build --verbose --all
+      - cargo test --verbose --all
