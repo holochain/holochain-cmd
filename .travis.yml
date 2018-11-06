@@ -7,6 +7,6 @@ jobs:
   include:
     - stage: "All"
       name: "Tests"
-      install: docker pull holochain/holochain-cmd:latest
+      install: docker pull holochain/holochain-cmd:develop
       script:
         - . docker/run-ci
