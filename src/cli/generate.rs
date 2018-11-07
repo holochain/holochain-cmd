@@ -89,12 +89,13 @@ mod tests {
             .assert()
             .success();
 
-         Command::main_binary()
-            .unwrap()
-            .current_dir(&tmp.path())
-            .args(&["g", "zomes/zubblebat", "assemblyscript"])
-            .assert()
-            .success();
+         // TODO: We cannot test this since there is no complete implementation of hdk-assemblyscript
+         // Command::main_binary()
+         //  .unwrap()
+         //   .current_dir(&tmp.path())
+         //   .args(&["g", "zomes/zubblebat", "assemblyscript"])
+         //   .assert()
+         //   .success();
 
     }
 }
