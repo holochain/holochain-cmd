@@ -2,7 +2,7 @@ jobs:
   include:
     - stage: "All"
       name: "Docker Tests"
-      dist: trusty
+      dist: xenial
       services:
         - docker
       install: docker pull holochain/holochain-cmd:develop
@@ -16,4 +16,3 @@ jobs:
       - rustup target add wasm32-unknown-unknown --toolchain nightly-2018-10-12-x86_64-pc-windows-msvc
       - cargo build --verbose --all
       - cargo test --verbose --all
-      
