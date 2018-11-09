@@ -3,8 +3,7 @@ FROM holochain/holochain-rust:develop
 USER root
 
 RUN apt-get update && apt-get install --yes \
-  qtdeclarative5-dev \
-  libqt5websockets5-dev \
+  nodejs-legacy \
   libreadline6-dev \
   software-properties-common
 
