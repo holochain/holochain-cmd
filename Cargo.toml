@@ -5,8 +5,8 @@ authors = ["Holochain Core Dev Team <devcore@holochain.org>"]
 
 [dependencies]
 holochain_core = { git = "https://github.com/holochain/holochain-rust", branch = "develop" }
+holochain_core_types = { git = "https://github.com/holochain/holochain-rust", branch = "develop" }
 holochain_dna = { git = "https://github.com/holochain/holochain-rust", branch = "develop" }
-holochain_agent = { git = "https://github.com/holochain/holochain-rust", branch = "develop" }
 holochain_cas_implementations = { git = "https://github.com/holochain/holochain-rust", branch = "develop" }
 structopt = "0.2"
 failure = "^0.1"

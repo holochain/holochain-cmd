@@ -5,7 +5,7 @@ use holochain_core::{
     logger::Logger,
     persister::SimplePersister,
 };
-use holochain_agent::Agent;
+use holochain_core_types::entry::agent::Agent;
 use holochain_cas_implementations::{cas::file::FilesystemStorage, eav::file::EavFileStorage};
 use std::sync::{Arc, Mutex};
 
