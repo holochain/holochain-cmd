@@ -1,17 +1,20 @@
-FROM holochain/holochain-rust:develop
+FROM holochain/holochain-rust:docker-cosmic
 
 USER root
 
-RUN apt-get update && apt-get install --yes \
-  nodejs-legacy \
-  libreadline6-dev \
-  software-properties-common
+#  readline needed for hcshell
+RUN apt-get update && apt-get install --yes libreadline6-dev
 
-# Install latest version of QT needed for hcshell
-RUN add-apt-repository ppa:beineri/opt-qt-5.11.1-xenial
-RUN apt-get update
-RUN apt-get --yes install qt511-meta-full
-RUN printf "/opt/qt511/bin\n/opt/qt511/lib" > /etc/xdg/qtchooser/default.conf
+# install qt:  This installs 5.11.1 which is what comes with cosmic
+RUN apt-get install --yes qt5-default qtdeclarative5-dev libqt5websockets5-dev
+
+# Use something like this to install a specific version of QT, below is what was used
+# to build 5.11 on xenial (16.04)
+#RUN apt-get update && apt-get install --yes software-properties-common
+#RUN add-apt-repository ppa:beineri/opt-qt-5.11.1-xenial
+#RUN apt-get update
+#RUN apt-get --yes install qt511-meta-full
+#RUN printf "/opt/qt511/bin\n/opt/qt511/lib" > /etc/xdg/qtchooser/default.conf
 
 RUN rustup toolchain install nightly-x86_64-unknown-linux-gnu
 RUN rustup toolchain install nightly-2018-07-17-x86_64-unknown-linux-gnu
