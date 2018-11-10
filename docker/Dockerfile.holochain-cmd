@@ -2,6 +2,8 @@ FROM holochain/holochain-rust:docker-cosmic
 
 USER root
 
+RUN export DEBIAN_FRONTEND=noninteractive
+
 #  readline needed for hcshell
 RUN apt-get update && apt-get install --yes libreadline6-dev
 
