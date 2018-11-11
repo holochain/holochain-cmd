@@ -5,8 +5,11 @@
 #rustup default nightly
 
 cd /holochain/holochain-cmd
+git reset --hard
+git pull
 git submodule init
 git submodule update
+cargo update
 
 cd /holochain/holosqape
 git reset --hard
