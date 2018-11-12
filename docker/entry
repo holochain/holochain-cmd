@@ -7,7 +7,7 @@ if [ -n "$HOST_UID" ]; then
     groupmod -g "$HOST_UID" holochain
     usermod -g "$HOST_UID" holochain
     chown -R -h "$HOST_UID":"$HOST_UID" /home/holochain
-	chown -R -h "$HOST_UID":"$HOST_UID" /home/holochain/*
+    chown -R -h "$HOST_UID":"$HOST_UID" /home/holochain/*
   fi
 fi
 
