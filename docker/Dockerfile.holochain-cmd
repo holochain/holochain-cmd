@@ -1,11 +1,14 @@
 FROM holochain/holochain-rust:develop
 
 RUN apt-get update && apt-get install --yes \
-  qtdeclarative5-dev \
-  libqt5websockets5-dev \
-  libreadline6-dev
+  libreadline6-dev \
+  software-properties-common
 
-USER root
+# Install latest version of QT needed for hcshell
+RUN add-apt-repository ppa:beineri/opt-qt-5.11.1-xenial
+RUN apt-get update
+RUN apt-get --yes install qt511-meta-full
+RUN printf "/opt/qt511/bin\n/opt/qt511/lib" > /etc/xdg/qtchooser/default.conf
 
 RUN rustup toolchain install nightly-x86_64-unknown-linux-gnu
 RUN rustup toolchain install nightly-2018-07-17-x86_64-unknown-linux-gnu
