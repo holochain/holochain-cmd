@@ -5,10 +5,14 @@
 #rustup default nightly
 
 cd /holochain/holochain-cmd
+git reset --hard
+git pull
 git submodule init
 git submodule update
+cargo update
 
 cd /holochain/holosqape
+git reset --hard
 git pull
 git submodule init
 git submodule update
@@ -18,13 +22,14 @@ cd /holochain/holosqape/holochain-rust
 cargo update
 cargo +$TOOLS_NIGHTLY build --release
 
-
 echo "COMPILING HOLOSQAPE BINDINGS"
 cd /holochain/holosqape/bindings
-qmake
+make clean
+qmake CONFIG+=release
 make
 
 echo "COMPILING hcshell"
 cd /holochain/holosqape/hcshell
+make clean
 qmake CONFIG+=release
 make

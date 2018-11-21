@@ -5,9 +5,9 @@ use holochain_core::{
     logger::Logger,
     persister::SimplePersister,
 };
-use holochain_agent::Agent;
-use holochain_cas_implementations::{cas::file::FilesystemStorage, eav::file::EavFileStorage};
-use std::sync::{Arc, Mutex};
+use holochain_core_types::entry::agent::Agent;
+use holochain_cas_implementations::{cas::memory::MemoryStorage, eav::memory::EavMemoryStorage};
+use std::sync::{Arc, Mutex, RwLock};
 
 #[derive(Clone, Debug)]
 pub struct TestLogger {
@@ -37,9 +37,8 @@ pub fn test_context(agent_name: &str) -> Arc<Context> {
             agent,
             logger.clone(),
             Arc::new(Mutex::new(SimplePersister::new(agent_name.to_string()))),
-            FilesystemStorage::new(tempdir().unwrap().path().to_str().unwrap()).unwrap(),
-            EavFileStorage::new(tempdir().unwrap().path().to_str().unwrap().to_string())
-                .unwrap(),
+            Arc::new(RwLock::new(MemoryStorage::new().unwrap())),
+            Arc::new(RwLock::new(EavMemoryStorage::new().unwrap())),
         ).unwrap(),
     )
 }

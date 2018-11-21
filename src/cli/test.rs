@@ -1,17 +1,19 @@
+use cli::package;
 use colored::*;
 use error::DefaultResult;
+use std::{fs, path::PathBuf};
 use util;
-use cli::package;
-use std::{
-    fs,
-    path::{PathBuf}
-};
 
 pub const TEST_DIR_NAME: &str = "test";
 pub const DIST_DIR_NAME: &str = "dist";
 
-pub fn test(path: &PathBuf, tests_folder: &str, testfile: &str, skip_npm: bool, skip_build: bool) -> DefaultResult<()> {
-
+pub fn test(
+    path: &PathBuf,
+    tests_folder: &str,
+    testfile: &str,
+    skip_npm: bool,
+    skip_build: bool,
+) -> DefaultResult<()> {
     // create dist folder
     let dist_path = path.join(&DIST_DIR_NAME);
 
@@ -43,10 +45,11 @@ pub fn test(path: &PathBuf, tests_folder: &str, testfile: &str, skip_npm: bool, 
         let node_modules_path = tests_path.join("node_modules");
         if !node_modules_path.exists() {
             println!("{}", "Installing node_modules".green().bold());
-            util::run_cmd(tests_path.clone(), "npm".to_string(), vec![
-                "install".to_string(),
-                "--silent".to_string(),
-            ])?;
+            util::run_cmd(
+                tests_path.clone(),
+                "npm".to_string(),
+                vec!["install".to_string(), "--silent".to_string()],
+            )?;
         }
 
         // npm run build
@@ -55,21 +58,20 @@ pub fn test(path: &PathBuf, tests_folder: &str, testfile: &str, skip_npm: bool, 
             "Building".green().bold(),
             testfile,
         );
-        util::run_cmd(tests_path.clone(), "npm".to_string(), vec![
-            "run".to_string(),
-            "build".to_string(),
-        ])?;
+        util::run_cmd(
+            tests_path.clone(),
+            "npm".to_string(),
+            vec!["run".to_string(), "build".to_string()],
+        )?;
     }
 
     // execute the built test file using hcshell
-    println!(
-        "{} tests in {}",
-        "Running".green().bold(),
-        testfile,
-    );
-    util::run_cmd(path.to_path_buf(), "hcshell".to_string(), vec![
-        testfile.to_string(),
-    ])?;
+    println!("{} tests in {}", "Running".green().bold(), testfile,);
+    util::run_cmd(
+        path.to_path_buf(),
+        "hcshell".to_string(),
+        vec![testfile.to_string()],
+    )?;
 
     Ok(())
 }
@@ -77,9 +79,9 @@ pub fn test(path: &PathBuf, tests_folder: &str, testfile: &str, skip_npm: bool, 
 #[cfg(test)]
 pub mod tests {
     use super::*;
+    use assert_cmd::prelude::*;
     use cli::package;
     use std::process::Command;
-    use assert_cmd::prelude::*;
     use tempfile::{Builder, TempDir};
 
     const HOLOCHAIN_TEST_PREFIX: &str = "org.holochain.test";
@@ -99,20 +101,35 @@ pub mod tests {
 
         // do init first, so theres a project
         Command::main_binary()
-                .unwrap()
-                .args(&["init", temp_dir_path.to_str().unwrap()])
-                .assert()
-                .success();
+            .unwrap()
+            .args(&["init", temp_dir_path.to_str().unwrap()])
+            .assert()
+            .success();
 
-        let result = test(&temp_dir_path_buf, &TEST_DIR_NAME, "test/dist/bundle.js", false, false);
+        test(
+            &temp_dir_path_buf,
+            &TEST_DIR_NAME,
+            "test/dist/bundle.js",
+            false,
+            false,
+        )
+        .unwrap_or_else(|e| panic!("test call failed: {}", e));
 
-        assert!(result.is_ok());
         // check success of packaging step
-        assert!(temp_dir_path_buf.join(&DIST_DIR_NAME).join(package::DEFAULT_BUNDLE_FILE_NAME).exists());
+        assert!(temp_dir_path_buf
+            .join(&DIST_DIR_NAME)
+            .join(package::DEFAULT_BUNDLE_FILE_NAME)
+            .exists());
         // check success of npm install step
-        assert!(temp_dir_path_buf.join(&TEST_DIR_NAME).join("node_modules").exists());
+        assert!(temp_dir_path_buf
+            .join(&TEST_DIR_NAME)
+            .join("node_modules")
+            .exists());
         // check success of js webpack build step
-        assert!(temp_dir_path_buf.join(&TEST_DIR_NAME).join("dist/bundle.js").exists());
+        assert!(temp_dir_path_buf
+            .join(&TEST_DIR_NAME)
+            .join("dist/bundle.js")
+            .exists());
     }
 
     #[test]
@@ -123,22 +140,37 @@ pub mod tests {
 
         // do init first, so theres a project
         Command::main_binary()
-                .unwrap()
-                .args(&["init", temp_dir_path.to_str().unwrap()])
-                .assert()
-                .success();
+            .unwrap()
+            .args(&["init", temp_dir_path.to_str().unwrap()])
+            .assert()
+            .success();
 
-        let result = test(&temp_dir_path_buf, &TEST_DIR_NAME, "test/dist/index.js", true, false);
+        let result = test(
+            &temp_dir_path_buf,
+            &TEST_DIR_NAME,
+            "test/dist/index.js",
+            true,
+            false,
+        );
 
         // is err because "hcshell test/dist/index.js" will have failed
         // but the important thing is that the npm calls weren't made
         assert!(result.is_err());
         // check success of packaging step
-        assert!(temp_dir_path_buf.join(&DIST_DIR_NAME).join(package::DEFAULT_BUNDLE_FILE_NAME).exists());
+        assert!(temp_dir_path_buf
+            .join(&DIST_DIR_NAME)
+            .join(package::DEFAULT_BUNDLE_FILE_NAME)
+            .exists());
         // npm shouldn't have installed
-        assert!(!temp_dir_path_buf.join(&TEST_DIR_NAME).join("node_modules").exists());
+        assert!(!temp_dir_path_buf
+            .join(&TEST_DIR_NAME)
+            .join("node_modules")
+            .exists());
         // built file shouldn't exist
-        assert!(!temp_dir_path_buf.join(&TEST_DIR_NAME).join("dist/bundle.js").exists());
+        assert!(!temp_dir_path_buf
+            .join(&TEST_DIR_NAME)
+            .join("dist/bundle.js")
+            .exists());
     }
 
     #[test]
@@ -149,12 +181,18 @@ pub mod tests {
 
         // do init first, so theres a project
         Command::main_binary()
-                .unwrap()
-                .args(&["init", temp_dir_path.to_str().unwrap()])
-                .assert()
-                .success();
+            .unwrap()
+            .args(&["init", temp_dir_path.to_str().unwrap()])
+            .assert()
+            .success();
 
-        let result = test(&temp_dir_path_buf, "west", "test/dist/bundle.js", false, false);
+        let result = test(
+            &temp_dir_path_buf,
+            "west",
+            "test/dist/bundle.js",
+            false,
+            false,
+        );
 
         // should err because "west" directory doesn't exist
         assert!(result.is_err());

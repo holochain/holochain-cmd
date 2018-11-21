@@ -1,5 +1,9 @@
 # Holochain Command Line Tools
 
+## Repo Contents Moved!
+
+NOTE: This repo has now been merged into [holochain-rust](https://github.com/holochain/holochain-rust/tree/develop/cmd)
+
 [![Project](https://img.shields.io/badge/project-holochain-blue.svg?style=flat-square)](http://holochain.org/)
 [![PM](https://img.shields.io/badge/pm-waffle-blue.svg?style=flat-square)](https://waffle.io/holochain/org)
 [![Chat](https://img.shields.io/badge/chat-chat%2eholochain%2enet-blue.svg?style=flat-square)](https://chat.holochain.net)
@@ -7,6 +11,10 @@
 This repo provides a set of tools for building and running Holochain DNA from the command line. The tools are written in Rust, and delivered as binary executables.
 
 ## Install
+
+Our recommended pattern for the installation of `hc` command line tools is to use the Developer Preview release that you can find here, along with its instructions: https://github.com/holochain/app-spec-rust/releases/tag/v0.0.1-dev-preview. Otherwise, you can proceed with the more complex instructions for building from source, below.
+
+### Building From Source
 
 These dependencies need to be installed in order to compile, and use `holochain-cmd`:
 
@@ -59,10 +67,10 @@ $ cd your_app_name
 We now have the empty shell of a Holochain app. From here, we will want to generate at least one Zome.
 To do this, run the following, replacing `your_zome_name` with a name related to the functionality you wish to develop. For example: `users`.
 ```shell
-$ hc generate zomes/your_zome_name rust
+$ hc generate zomes/your_zome_name
 ```
 
-Currently, Zomes can be generated as `rust`. In the future, you may be able to generate zomes in another language. `hc generate` scaffolds the files and config you need to get started. 
+Currently, only Zomes written in Rust can be generated. In the future, you may be able to generate Zomes in another language. `hc generate` scaffolds the files and config you need to get started. 
 
 What this did is generate a new folder under `zomes` called `users`. Here is the folder structure of it.
 - users
