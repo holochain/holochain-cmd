@@ -1,5 +1,9 @@
 # Holochain Command Line Tools
 
+## Repo Contents Moved!
+
+NOTE: This repo has now been merged into [holochain-rust](https://github.com/holochain/holochain-rust/tree/develop/cmd)
+
 [![Project](https://img.shields.io/badge/project-holochain-blue.svg?style=flat-square)](http://holochain.org/)
 [![PM](https://img.shields.io/badge/pm-waffle-blue.svg?style=flat-square)](https://waffle.io/holochain/org)
 [![Chat](https://img.shields.io/badge/chat-chat%2eholochain%2enet-blue.svg?style=flat-square)](https://chat.holochain.net)
